@@ -17,9 +17,9 @@ wsize_sec = 15;
 winc_sec = 1;
 %% Import data from text file.
 %% Initialize variables.
-filename = '../TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
-%filename = '../SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_15.29.53.txt';
-%filename = '../TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_132_7.37.42.txt';
+filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
+%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_15.29.53.txt';
+%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_132_7.37.42.txt';
 delimiter = ' ';
 inf = 4294967295;
 %% Format string for each line of text:
@@ -560,8 +560,8 @@ tmp = abs(t_w - xstop);
 nodePositionXY = zeros(length(IDs_TO_CONSIDER),3,xstop_index-xstart_index);
 nodePositionIndex = 1;
 for timeIndexNo = xstart_index : xstop_index
-    createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links , 'output_m.dot');
-    [status,cmdout] = dos('neato -Tplain output_m.dot');
+    createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links , '../output/output_m.dot');
+    [status,cmdout] = dos('neato -Tplain ../output/output_m.dot');
     if status == 0
         textLines = textscan(cmdout, '%s','delimiter', '\n');
         
@@ -579,7 +579,7 @@ for timeIndexNo = xstart_index : xstop_index
 end
 
 figure(205)
-filename = 'output_Animation.gif';
+filename = '../output/output_Animation.gif';
 fps = 1/winc_sec*10;
 colorlist2 = hsv( size(nodePositionXY,1) );
 for timeIndexNo = 1 : size(nodePositionXY,3)
