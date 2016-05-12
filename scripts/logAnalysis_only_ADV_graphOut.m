@@ -313,239 +313,241 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
         
         if (size(T_2to1,1) > 1) || (size(T_1to2,1) > 1) %let's try with 'or'
             RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc);
-            if size(T_2to1,1) <= 1
-                T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_1to2(1)) )';
-            elseif size(T_1to2,1) <= 1
-                T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_2to1(1)) )';
-            else
-                T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_2to1(1),T_1to2(1))) )';
-            end
-            if(focusId1 == i_id_1 && focusId2 == i_id_2) || (focusId1 == i_id_2 && focusId2 == i_id_1)
-                figure;
-                plot(T_W*TICK_DURATION,RSSI_Signal_W,T_2to1*TICK_DURATION,RSSI_Signal_2to1,'-.',T_1to2*TICK_DURATION,RSSI_Signal_1to2,'-.');
-                legend('merged-filtered-resampled','2to1','1to2');
-                xlabel('Time [s]');
-                ylabel('RSSI [dBm]');
-                grid on;
-                title('RSSI between FOCUS ID1 and FOCUS ID2')
-                
-            end
-            
-            if isempty(t_w) %% this is run only once at the first iteration of the nested loops
-                graphEdeges_RSSI = RSSI_Signal_W;
-                t_w = T_W;
-                links = [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)];
-            else
-                if ((t_w(1) - winc) >= T_W(1)) || (T_W(end) > (t_w(end) )) %%the T_W values are not contained within t_w
-                    if (t_w(1) - winc) >= T_W(1) %%the current T_2to1_W array starts before t_2to1 array
-                        %%RESIZE t VECTOR
-                        t_temp = t_w(1):-winc:T_W(1);
-                        t_w = cat(1,t_temp',t_w);
-                        
-                        graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
-                        graphEdeges_RSSI_temp( size(t_temp,1)+1:end,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
-                        
-                        %%if the new data array starts before and ends
-                        %%after the old data copy only the first part, the
-                        %%remaining part will be copied in the next 'if'
-                        if( size(RSSI_Signal_W,1) <= size(graphEdeges_RSSI_temp,1) )
-                            graphEdeges_RSSI_temp(1:size(RSSI_Signal_W,1),end) = RSSI_Signal_W;
-                        else
-                            graphEdeges_RSSI_temp(1:end,end) = RSSI_Signal_W(1:size(graphEdeges_RSSI_temp,1));
-                        end
-                        graphEdeges_RSSI = graphEdeges_RSSI_temp;
-                    end
-                    
-                    if T_W(end) > (t_w(end) ) %%the current T_2to1_W array finishes after t_2to1 array
-                        %%RESIZE t VECTOR
-                        t_temp = t_w(end):winc:T_W(end);
-                        t_w = cat(1,t_w,t_temp');
-                        
-                        graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
-                        %graphEdeges_RSSI_temp( 1:(size(t_w,1)-size(t_temp,1)) ,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
-                        graphEdeges_RSSI_temp( 1:size(graphEdeges_RSSI,1) ,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
-                        graphEdeges_RSSI_temp(end-size(RSSI_Signal_W,1)+1 : end,end) = RSSI_Signal_W;
-                        graphEdeges_RSSI = graphEdeges_RSSI_temp;
-                        
-                    end
+            if ~isempty(RSSI_Signal_W)
+                if size(T_2to1,1) <= 1
+                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_1to2(1)) )';
+                elseif size(T_1to2,1) <= 1
+                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_2to1(1)) )';
                 else
-                    graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
-                    graphEdeges_RSSI_temp(1:end,1:end-1) = graphEdeges_RSSI;
-                    tmp = abs(t_w-T_W(1));
-                    [ ~ , startingindex] = min(tmp);
-                    graphEdeges_RSSI_temp(startingindex:startingindex+length(RSSI_Signal_W)-1,end) = RSSI_Signal_W;
-                    graphEdeges_RSSI = graphEdeges_RSSI_temp;
+                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_2to1(1),T_1to2(1))) )';
                 end
-                links = cat(2,links, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
+                if(focusId1 == i_id_1 && focusId2 == i_id_2) || (focusId1 == i_id_2 && focusId2 == i_id_1)
+                    figure;
+                    plot(T_W*TICK_DURATION,RSSI_Signal_W,T_2to1*TICK_DURATION,RSSI_Signal_2to1,'-.',T_1to2*TICK_DURATION,RSSI_Signal_1to2,'-.');
+                    legend('merged-filtered-resampled','2to1','1to2');
+                    xlabel('Time [s]');
+                    ylabel('RSSI [dBm]');
+                    grid on;
+                    title('RSSI between FOCUS ID1 and FOCUS ID2')
+                    
+                end
+                
+                if isempty(t_w) %% this is run only once at the first iteration of the nested loops
+                    graphEdeges_RSSI = RSSI_Signal_W;
+                    t_w = T_W;
+                    links = [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)];
+                else
+                    if ((t_w(1) - winc) >= T_W(1)) || (T_W(end) > (t_w(end) )) %%the T_W values are not contained within t_w
+                        if (t_w(1) - winc) >= T_W(1) %%the current T_2to1_W array starts before t_2to1 array
+                            %%RESIZE t VECTOR
+                            t_temp = t_w(1):-winc:T_W(1);
+                            t_w = cat(1,t_temp',t_w);
+                            
+                            graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
+                            graphEdeges_RSSI_temp( size(t_temp,1)+1:end,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
+                            
+                            %%if the new data array starts before and ends
+                            %%after the old data copy only the first part, the
+                            %%remaining part will be copied in the next 'if'
+                            if( size(RSSI_Signal_W,1) <= size(graphEdeges_RSSI_temp,1) )
+                                graphEdeges_RSSI_temp(1:size(RSSI_Signal_W,1),end) = RSSI_Signal_W;
+                            else
+                                graphEdeges_RSSI_temp(1:end,end) = RSSI_Signal_W(1:size(graphEdeges_RSSI_temp,1));
+                            end
+                            graphEdeges_RSSI = graphEdeges_RSSI_temp;
+                        end
+                        
+                        if T_W(end) > (t_w(end) ) %%the current T_2to1_W array finishes after t_2to1 array
+                            %%RESIZE t VECTOR
+                            t_temp = t_w(end):winc:T_W(end);
+                            t_w = cat(1,t_w,t_temp');
+                            
+                            graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
+                            %graphEdeges_RSSI_temp( 1:(size(t_w,1)-size(t_temp,1)) ,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
+                            graphEdeges_RSSI_temp( 1:size(graphEdeges_RSSI,1) ,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
+                            graphEdeges_RSSI_temp(end-size(RSSI_Signal_W,1)+1 : end,end) = RSSI_Signal_W;
+                            graphEdeges_RSSI = graphEdeges_RSSI_temp;
+                            
+                        end
+                    else
+                        graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
+                        graphEdeges_RSSI_temp(1:end,1:end-1) = graphEdeges_RSSI;
+                        tmp = abs(t_w-T_W(1));
+                        [ ~ , startingindex] = min(tmp);
+                        graphEdeges_RSSI_temp(startingindex:startingindex+length(RSSI_Signal_W)-1,end) = RSSI_Signal_W;
+                        graphEdeges_RSSI = graphEdeges_RSSI_temp;
+                    end
+                    links = cat(2,links, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
+                end
+                
+                figure(100)
+                plot(t_w*TICK_DURATION,graphEdeges_RSSI(:,end),'col',colorlist(i,:))
+                hold on;
+                signalsCount = signalsCount + 1;
+            else
+                emptySignalsCount = emptySignalsCount + 1;
             end
             
-            figure(100)
-            plot(t_w*TICK_DURATION,graphEdeges_RSSI(:,end),'col',colorlist(i,:))
-            hold on;
-            signalsCount = signalsCount + 1;
-        else
-            emptySignalsCount = emptySignalsCount + 1;
-        end
-        
-        if i > nextPercentPlotIndex
-            nextPercentPlotIndex = nextPercentPlotIndex + 5;
-            for s=1:length(str)
-                fprintf('\b');
+            if i > nextPercentPlotIndex
+                nextPercentPlotIndex = nextPercentPlotIndex + 5;
+                for s=1:(length(str))
+                    fprintf('\b');
+                end
+                str = sprintf('%.2f percent done...\n',i/((size(RSSI_MATRIX,1)^2-2*(size(RSSI_MATRIX,1)-1)-size(RSSI_MATRIX,1))/2)*100);
+                fprintf(str);
             end
-            str = sprintf('%.2f done...\n',i/((size(RSSI_MATRIX,1)^2-2*(size(RSSI_MATRIX,1)-1)-size(RSSI_MATRIX,1))/2)*100);
-            fprintf(str);
+            
+            %         %% rssi data for packets sent from node 2 to node 1
+            %         if length(T_2to1) > 1
+            %
+            %             RSSI_Signal_2to1_W = timeBasedSlidingAvg(T_2to1, RSSI_Signal_2to1, wsize, winc);
+            %             T_2to1_W = ((1:1:size(RSSI_Signal_2to1_W,1))*winc + T_2to1(1))';
+            %
+            %             if(focusId1 == i_id_1 && focusId2 == i_id_2)
+            %                 figure;
+            %                 plot(T_2to1_W,RSSI_Signal_2to1_W);
+            %                 grid on;
+            %                 title('Filtered RSSI for packets sent by FOCUS ID2 and received by FOCUS ID1')
+            %
+            %                 figure;
+            %                 plot(T_2to1,RSSI_Signal_2to1);
+            %                 grid on;
+            %                 title('Raw RSSI for packets sent by FOCUS ID2 and received by FOCUS ID1')
+            %
+            %                 output = timeBasedSlidingAvg2dim(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc);
+            %                 T_output = ((1:1:size(output,1))*winc + min(T_2to1(1),T_1to2(1)))';
+            %
+            %                 figure;
+            %                 plot(T_output,output);
+            %                 grid on;
+            %                 title('timeBasedSlidingAvg2dim')
+            %             end
+            %
+            %             if isempty(t_2to1) %% this is run only once at the first iteration of the nested loops
+            %                 graphEdeges_RSSI_2to1 = RSSI_Signal_2to1_W;
+            %                 t_2to1 = T_2to1_W;
+            %                 relations2to1 = [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)];
+            %             else
+            %                 if ((t_2to1(1) - winc) >= T_2to1_W(1)) || (T_2to1_W(end) > (t_2to1(end) )) %%the T_2to1_W values are not contained within t_2to1 boundaries
+            %                     if (t_2to1(1) - winc) >= T_2to1_W(1) %%the current T_2to1_W array starts before t_2to1 array
+            %                         %%RESIZE t VECTOR
+            %                         t_temp = t_2to1(1):-winc:T_2to1_W(1);
+            %                         t_2to1 = cat(1,t_temp',t_2to1);
+            %
+            %                         graphEdeges_RSSI_temp = ones(size(t_2to1,1),size(graphEdeges_RSSI_2to1,2)+1) * (-inf);
+            %                         graphEdeges_RSSI_temp( size(t_temp,1)+1:end,1:size(graphEdeges_RSSI_2to1,2) ) = graphEdeges_RSSI_2to1;
+            %
+            %                         %%if the new data array starts before and ends
+            %                         %%after the old data copy only the first part, the
+            %                         %%remaining part will be copied in the next 'if'
+            %                         if( size(RSSI_Signal_2to1_W,1) <= size(graphEdeges_RSSI_temp,1) )
+            %                             graphEdeges_RSSI_temp(1:size(RSSI_Signal_2to1_W,1),end) = RSSI_Signal_2to1_W;
+            %                         else
+            %                             graphEdeges_RSSI_temp(1:end,end) = RSSI_Signal_2to1_W(1:size(graphEdeges_RSSI_temp,1));
+            %                         end
+            %                         graphEdeges_RSSI_2to1 = graphEdeges_RSSI_temp;
+            %                     end
+            %
+            %                     if T_2to1_W(end) > (t_2to1(end) ) %%the current T_2to1_W array finishes after t_2to1 array
+            %                         %%RESIZE t VECTOR
+            %                         t_temp = t_2to1(end):winc:T_2to1_W(end) ;
+            %                         t_2to1 = cat(1,t_2to1,t_temp');
+            %
+            %                         graphEdeges_RSSI_temp = ones(size(t_2to1,1),size(graphEdeges_RSSI_2to1,2)+1) * (-inf);
+            %                         graphEdeges_RSSI_temp( 1:(size(t_2to1,1)-size(t_temp,1)) ,1:size(graphEdeges_RSSI_2to1,2) ) = graphEdeges_RSSI_2to1;
+            %                         graphEdeges_RSSI_temp(end-size(RSSI_Signal_2to1_W,1)+1 : end,end) = RSSI_Signal_2to1_W;
+            %                         graphEdeges_RSSI_2to1 = graphEdeges_RSSI_temp;
+            %
+            %                     end
+            %                 else
+            %                     graphEdeges_RSSI_temp = ones(size(t_2to1,1),size(graphEdeges_RSSI_2to1,2)+1) * (-inf);
+            %                     graphEdeges_RSSI_temp(1:end,1:end-1) = graphEdeges_RSSI_2to1;
+            %                     tmp = abs(t_2to1-T_2to1_W(1));
+            %                     [ ~ , startingindex] = min(tmp);
+            %                     graphEdeges_RSSI_temp(startingindex:startingindex+length(RSSI_Signal_2to1_W)-1,end) = RSSI_Signal_2to1_W;
+            %                     graphEdeges_RSSI_2to1 = graphEdeges_RSSI_temp;
+            %                 end
+            %                 relations2to1 = cat(2,relations2to1, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
+            %             end
+            %
+            %             figure(100)
+            %             plot(t_2to1,graphEdeges_RSSI_2to1(:,end),'col',colorlist(i,:))
+            %             hold on;
+            %         end
+            %
+            %
+            %        %% rssi data for packets sent from node 1 to node 2
+            %         if length(T_1to2) > 1
+            %
+            %             RSSI_Signal_1to2_W = timeBasedSlidingAvg(T_1to2, RSSI_Signal_1to2, wsize, winc);
+            %             T_1to2_W = ((1:1:size(RSSI_Signal_1to2_W,1))*winc + T_1to2(1))';
+            %
+            %             if(focusId1 == i_id_1 && focusId2 == i_id_2)
+            %                 figure;
+            %                 plot(T_1to2_W,RSSI_Signal_1to2_W);
+            %                 grid on;
+            %                 title('Filtered RSSI for packets sent by FOCUS ID1 and received by FOCUS ID2')
+            %
+            %                 figure;
+            %                 plot(T_1to2,RSSI_Signal_1to2);
+            %                 grid on;
+            %                 title('Raw RSSI for packets sent by FOCUS ID1 and received by FOCUS ID2')
+            %             end
+            %
+            %             if isempty(t_1to2) %% this is run only once at the first iteration of the nested loops
+            %                 graphEdeges_RSSI_1to2 = RSSI_Signal_1to2_W;
+            %                 t_1to2 = T_1to2_W;
+            %                 relations1to2 = [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)];
+            %             else
+            %                 if ((t_1to2(1) - winc) >= T_1to2_W(1)) || (T_1to2_W(end) > (t_1to2(end) )) %%the T_1to2_W values are not contained within t_1to2 boundaries
+            %                     if (t_1to2(1) - winc) >= T_1to2_W(1) %%the current T_1to2_W array starts before t_1to2 array
+            %                         %%RESIZE t VECTOR
+            %                         t_temp = t_1to2(1):-winc:T_1to2_W(1);
+            %                         t_1to2 = cat(1,t_temp',t_1to2);
+            %
+            %                         graphEdeges_RSSI_temp = ones(size(t_1to2,1),size(graphEdeges_RSSI_1to2,2)+1) * (-inf);
+            %                         graphEdeges_RSSI_temp( size(t_temp,1)+1:end,1:size(graphEdeges_RSSI_1to2,2) ) = graphEdeges_RSSI_1to2;
+            %
+            %                         %%if the new data array starts before and ends
+            %                         %%after the old data copy only the first part, the
+            %                         %%remaining part will be copied in the next 'if'
+            %                         if( size(RSSI_Signal_1to2_W,1) <= size(graphEdeges_RSSI_temp,1) )
+            %                             graphEdeges_RSSI_temp(1:size(RSSI_Signal_1to2_W,1),end) = RSSI_Signal_1to2_W;
+            %                         else
+            %                             graphEdeges_RSSI_temp(1:end,end) = RSSI_Signal_1to2_W(1:size(graphEdeges_RSSI_temp,1));
+            %                         end
+            %                         graphEdeges_RSSI_1to2 = graphEdeges_RSSI_temp;
+            %                     end
+            %
+            %                     if T_1to2_W(end) > (t_1to2(end) ) %%the current T_1to2_W array finishes after t_1to2 array
+            %                         %%RESIZE t VECTOR
+            %                         t_temp = t_1to2(end):winc:T_1to2_W(end) ;
+            %                         t_1to2 = cat(1,t_1to2,t_temp');
+            %
+            %                         graphEdeges_RSSI_temp = ones(size(t_1to2,1),size(graphEdeges_RSSI_1to2,2)+1) * (-inf);
+            %                         graphEdeges_RSSI_temp( 1:(size(t_1to2,1)-size(t_temp,1)) ,1:size(graphEdeges_RSSI_1to2,2) ) = graphEdeges_RSSI_1to2;
+            %                         graphEdeges_RSSI_temp(end-size(RSSI_Signal_1to2_W,1)+1 : end,end) = RSSI_Signal_1to2_W;
+            %                         graphEdeges_RSSI_1to2 = graphEdeges_RSSI_temp;
+            %
+            %                     end
+            %                 else
+            %                     graphEdeges_RSSI_temp = ones(size(t_1to2,1),size(graphEdeges_RSSI_1to2,2)+1) * (-inf);
+            %                     graphEdeges_RSSI_temp(1:end,1:end-1) = graphEdeges_RSSI_1to2;
+            %                     tmp = abs(t_1to2-T_1to2_W(1));
+            %                     [ ~ , startingindex] = min(tmp);
+            %                     graphEdeges_RSSI_temp(startingindex:startingindex+length(RSSI_Signal_1to2_W)-1,end) = RSSI_Signal_1to2_W;
+            %                     graphEdeges_RSSI_1to2 = graphEdeges_RSSI_temp;
+            %                 end
+            %                 relations1to2 = cat(2,relations1to2, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
+            %             end
+            %
+            %             figure(101)
+            %             plot(t_1to2,graphEdeges_RSSI_1to2(:,end),'col',colorlist(i,:))
+            %             hold on;
+            %         end
+            
+            i = i+1;
         end
-        
-%         %% rssi data for packets sent from node 2 to node 1
-%         if length(T_2to1) > 1
-%             
-%             RSSI_Signal_2to1_W = timeBasedSlidingAvg(T_2to1, RSSI_Signal_2to1, wsize, winc);
-%             T_2to1_W = ((1:1:size(RSSI_Signal_2to1_W,1))*winc + T_2to1(1))';
-%             
-%             if(focusId1 == i_id_1 && focusId2 == i_id_2)
-%                 figure;
-%                 plot(T_2to1_W,RSSI_Signal_2to1_W);
-%                 grid on;
-%                 title('Filtered RSSI for packets sent by FOCUS ID2 and received by FOCUS ID1')
-%                 
-%                 figure;
-%                 plot(T_2to1,RSSI_Signal_2to1);
-%                 grid on;
-%                 title('Raw RSSI for packets sent by FOCUS ID2 and received by FOCUS ID1')
-%                 
-%                 output = timeBasedSlidingAvg2dim(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc);
-%                 T_output = ((1:1:size(output,1))*winc + min(T_2to1(1),T_1to2(1)))';
-%                  
-%                 figure;
-%                 plot(T_output,output);
-%                 grid on;
-%                 title('timeBasedSlidingAvg2dim')
-%             end
-%             
-%             if isempty(t_2to1) %% this is run only once at the first iteration of the nested loops
-%                 graphEdeges_RSSI_2to1 = RSSI_Signal_2to1_W;
-%                 t_2to1 = T_2to1_W;
-%                 relations2to1 = [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)];
-%             else
-%                 if ((t_2to1(1) - winc) >= T_2to1_W(1)) || (T_2to1_W(end) > (t_2to1(end) )) %%the T_2to1_W values are not contained within t_2to1 boundaries
-%                     if (t_2to1(1) - winc) >= T_2to1_W(1) %%the current T_2to1_W array starts before t_2to1 array
-%                         %%RESIZE t VECTOR
-%                         t_temp = t_2to1(1):-winc:T_2to1_W(1);
-%                         t_2to1 = cat(1,t_temp',t_2to1);
-%                         
-%                         graphEdeges_RSSI_temp = ones(size(t_2to1,1),size(graphEdeges_RSSI_2to1,2)+1) * (-inf);
-%                         graphEdeges_RSSI_temp( size(t_temp,1)+1:end,1:size(graphEdeges_RSSI_2to1,2) ) = graphEdeges_RSSI_2to1;
-%                         
-%                         %%if the new data array starts before and ends
-%                         %%after the old data copy only the first part, the
-%                         %%remaining part will be copied in the next 'if'
-%                         if( size(RSSI_Signal_2to1_W,1) <= size(graphEdeges_RSSI_temp,1) )
-%                             graphEdeges_RSSI_temp(1:size(RSSI_Signal_2to1_W,1),end) = RSSI_Signal_2to1_W;
-%                         else
-%                             graphEdeges_RSSI_temp(1:end,end) = RSSI_Signal_2to1_W(1:size(graphEdeges_RSSI_temp,1));
-%                         end
-%                         graphEdeges_RSSI_2to1 = graphEdeges_RSSI_temp;
-%                     end
-%                     
-%                     if T_2to1_W(end) > (t_2to1(end) ) %%the current T_2to1_W array finishes after t_2to1 array
-%                         %%RESIZE t VECTOR
-%                         t_temp = t_2to1(end):winc:T_2to1_W(end) ;
-%                         t_2to1 = cat(1,t_2to1,t_temp');
-%                         
-%                         graphEdeges_RSSI_temp = ones(size(t_2to1,1),size(graphEdeges_RSSI_2to1,2)+1) * (-inf);
-%                         graphEdeges_RSSI_temp( 1:(size(t_2to1,1)-size(t_temp,1)) ,1:size(graphEdeges_RSSI_2to1,2) ) = graphEdeges_RSSI_2to1;
-%                         graphEdeges_RSSI_temp(end-size(RSSI_Signal_2to1_W,1)+1 : end,end) = RSSI_Signal_2to1_W;
-%                         graphEdeges_RSSI_2to1 = graphEdeges_RSSI_temp;
-%                         
-%                     end
-%                 else
-%                     graphEdeges_RSSI_temp = ones(size(t_2to1,1),size(graphEdeges_RSSI_2to1,2)+1) * (-inf);
-%                     graphEdeges_RSSI_temp(1:end,1:end-1) = graphEdeges_RSSI_2to1;
-%                     tmp = abs(t_2to1-T_2to1_W(1));
-%                     [ ~ , startingindex] = min(tmp);
-%                     graphEdeges_RSSI_temp(startingindex:startingindex+length(RSSI_Signal_2to1_W)-1,end) = RSSI_Signal_2to1_W;
-%                     graphEdeges_RSSI_2to1 = graphEdeges_RSSI_temp;
-%                 end
-%                 relations2to1 = cat(2,relations2to1, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
-%             end
-%             
-%             figure(100)
-%             plot(t_2to1,graphEdeges_RSSI_2to1(:,end),'col',colorlist(i,:))
-%             hold on;
-%         end
-%         
-%         
-%        %% rssi data for packets sent from node 1 to node 2 
-%         if length(T_1to2) > 1
-%             
-%             RSSI_Signal_1to2_W = timeBasedSlidingAvg(T_1to2, RSSI_Signal_1to2, wsize, winc);
-%             T_1to2_W = ((1:1:size(RSSI_Signal_1to2_W,1))*winc + T_1to2(1))';
-%             
-%             if(focusId1 == i_id_1 && focusId2 == i_id_2)
-%                 figure;
-%                 plot(T_1to2_W,RSSI_Signal_1to2_W);
-%                 grid on;
-%                 title('Filtered RSSI for packets sent by FOCUS ID1 and received by FOCUS ID2')
-%                 
-%                 figure;
-%                 plot(T_1to2,RSSI_Signal_1to2);
-%                 grid on;
-%                 title('Raw RSSI for packets sent by FOCUS ID1 and received by FOCUS ID2')
-%             end
-%             
-%             if isempty(t_1to2) %% this is run only once at the first iteration of the nested loops
-%                 graphEdeges_RSSI_1to2 = RSSI_Signal_1to2_W;
-%                 t_1to2 = T_1to2_W;
-%                 relations1to2 = [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)];
-%             else
-%                 if ((t_1to2(1) - winc) >= T_1to2_W(1)) || (T_1to2_W(end) > (t_1to2(end) )) %%the T_1to2_W values are not contained within t_1to2 boundaries
-%                     if (t_1to2(1) - winc) >= T_1to2_W(1) %%the current T_1to2_W array starts before t_1to2 array
-%                         %%RESIZE t VECTOR
-%                         t_temp = t_1to2(1):-winc:T_1to2_W(1);
-%                         t_1to2 = cat(1,t_temp',t_1to2);
-%                         
-%                         graphEdeges_RSSI_temp = ones(size(t_1to2,1),size(graphEdeges_RSSI_1to2,2)+1) * (-inf);
-%                         graphEdeges_RSSI_temp( size(t_temp,1)+1:end,1:size(graphEdeges_RSSI_1to2,2) ) = graphEdeges_RSSI_1to2;
-%                         
-%                         %%if the new data array starts before and ends
-%                         %%after the old data copy only the first part, the
-%                         %%remaining part will be copied in the next 'if'
-%                         if( size(RSSI_Signal_1to2_W,1) <= size(graphEdeges_RSSI_temp,1) )
-%                             graphEdeges_RSSI_temp(1:size(RSSI_Signal_1to2_W,1),end) = RSSI_Signal_1to2_W;
-%                         else
-%                             graphEdeges_RSSI_temp(1:end,end) = RSSI_Signal_1to2_W(1:size(graphEdeges_RSSI_temp,1));
-%                         end
-%                         graphEdeges_RSSI_1to2 = graphEdeges_RSSI_temp;
-%                     end
-%                     
-%                     if T_1to2_W(end) > (t_1to2(end) ) %%the current T_1to2_W array finishes after t_1to2 array
-%                         %%RESIZE t VECTOR
-%                         t_temp = t_1to2(end):winc:T_1to2_W(end) ;
-%                         t_1to2 = cat(1,t_1to2,t_temp');
-%                         
-%                         graphEdeges_RSSI_temp = ones(size(t_1to2,1),size(graphEdeges_RSSI_1to2,2)+1) * (-inf);
-%                         graphEdeges_RSSI_temp( 1:(size(t_1to2,1)-size(t_temp,1)) ,1:size(graphEdeges_RSSI_1to2,2) ) = graphEdeges_RSSI_1to2;
-%                         graphEdeges_RSSI_temp(end-size(RSSI_Signal_1to2_W,1)+1 : end,end) = RSSI_Signal_1to2_W;
-%                         graphEdeges_RSSI_1to2 = graphEdeges_RSSI_temp;
-%                         
-%                     end
-%                 else
-%                     graphEdeges_RSSI_temp = ones(size(t_1to2,1),size(graphEdeges_RSSI_1to2,2)+1) * (-inf);
-%                     graphEdeges_RSSI_temp(1:end,1:end-1) = graphEdeges_RSSI_1to2;
-%                     tmp = abs(t_1to2-T_1to2_W(1));
-%                     [ ~ , startingindex] = min(tmp);
-%                     graphEdeges_RSSI_temp(startingindex:startingindex+length(RSSI_Signal_1to2_W)-1,end) = RSSI_Signal_1to2_W;
-%                     graphEdeges_RSSI_1to2 = graphEdeges_RSSI_temp;
-%                 end
-%                 relations1to2 = cat(2,relations1to2, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
-%             end
-%             
-%             figure(101)
-%             plot(t_1to2,graphEdeges_RSSI_1to2(:,end),'col',colorlist(i,:))
-%             hold on;
-%         end
-
-    i = i+1;
     end
 end
 fprintf('Done!\n\n');
