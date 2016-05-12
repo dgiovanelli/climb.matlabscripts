@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns:viz="http:///www.gexf.net/1.1draft/viz" version="1.1" xmlns="http://www.gexf.net/1.1draft">
+<meta lastmodifieddate="2016-05-10+13:50">
+<creator>Gephi 0.7</creator>
+</meta>
+<graph defaultedgetype="undirected" idtype="string" type="static">
+<nodes count="5">
+<node id="2.0" label="02"/>
+<node id="3.0" label="03"/>
+<node id="4.0" label="04"/>
+<node id="9.0" label="09"/>
+<node id="11.0" label="0b"/>
+</nodes>
+<edges count="10">
+<edge id="1.0" source="9.0" target="11.0" weight="0.15541"/>
+<edge id="2.0" source="9.0" target="2.0" weight="0.00981"/>
+<edge id="3.0" source="9.0" target="4.0" weight="0.00665"/>
+<edge id="4.0" source="9.0" target="3.0" weight="0.14484"/>
+<edge id="5.0" source="11.0" target="2.0" weight="0.02415"/>
+<edge id="6.0" source="11.0" target="4.0" weight="0.00946"/>
+<edge id="7.0" source="11.0" target="3.0" weight="0.07044"/>
+<edge id="8.0" source="2.0" target="4.0" weight="1.16578"/>
+<edge id="9.0" source="2.0" target="3.0" weight="0.01048"/>
+<edge id="10.0" source="4.0" target="3.0" weight="0.00701"/>
+</edges>
+</graph>
+</gexf>
