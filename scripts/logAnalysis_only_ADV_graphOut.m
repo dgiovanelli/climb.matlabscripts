@@ -1,27 +1,27 @@
 clear all;
 close all;
 clc;
-%NODE_ID_1 AND NODE_ID_2 ARE NODES UNDER ATTENTION. THE SCRIPT PLOTS RSSI
-%BETWEEN THESE NODES AND DELTA T BETWEEN SAMPLES FOR BOTH NODES.
-%CHANGE filename VARIABLE TO CHANGE THE TEST TO BE ANALYZED
 
 NODE_ID_1 = 2;
 NODE_ID_2 = 4;
-IDs_TO_CONSIDER = [2,3,4,9,11];
+IDs_TO_CONSIDER = []; % set this to empty to select all IDs
+%IDs_TO_CONSIDER = [2,3,4,9,11];
 %IDs_TO_CONSIDER = [6, 3, 129, 2, 4, 1];
 %IDs_TO_CONSIDER = [ 48, 50,  52,  72, 70, 51, 53,  58, 54, 57, 62, 61, 60, 56, 55, 75, 67, 65, 64, 68, 66, 49 ];
-AMOUNT_OF_NODE = length(IDs_TO_CONSIDER);
+if isempty(IDs_TO_CONSIDER) 
+    AMOUNT_OF_NODE = 20;
+else
+    AMOUNT_OF_NODE = length(IDs_TO_CONSIDER);
+end
 ANDROID = 1; %set this to 1 if the log has been performed with the android app
 SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plotted (and the packet counter info are discarded)
 wsize_sec = 15;
 winc_sec = 1;
-%% Import data from text file.
-%% Initialize variables.
 filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_15.29.53.txt';
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_132_7.37.42.txt';
 delimiter = ' ';
-inf = 4294967295;
+
 %% Format string for each line of text:
 %   column1: double (%f)
 %	column2: double (%f)
@@ -143,7 +143,7 @@ for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
     if strcmp(ADV_DATA.SOURCE.NAME{lineNo},'CLIMBC'); %ONLY CHILD NODES ADV DATA IS ANALYZED HERE
         if ~isempty(ADV_DATA.DATA{lineNo})
             RECEIVER_ID = sscanf(ADV_DATA.DATA{lineNo}(1:2),'%x'); %EXTRACT RECEIVER ID, RECEIVER IS INTENDED TO BE THE NODE THAT RECEIVES OTHER NODES ADV AND RETRANSMIT THEIR RSSI INFORMATION
-            if find(IDs_TO_CONSIDER == RECEIVER_ID)
+            if sum(IDs_TO_CONSIDER == RECEIVER_ID) >= 1 || isempty(IDs_TO_CONSIDER);
                 i = findNodeIndex(RSSI_MATRIX, RECEIVER_ID );
                 if i > size(RSSI_MATRIX,1) %IF RECEIVER_ID IS NOT ALREADY IN THE MATRIX ADD IT
                     RSSI_MATRIX = addIDtoMatrix(RSSI_MATRIX,RECEIVER_ID);  %THIS RESIZES RSSI_MATRIX ADDING ONE LINE AND ONE COLUMN
@@ -166,7 +166,7 @@ for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
                 for advDataIdx = 5:4:(numel(ADV_DATA.DATA{lineNo})-6) %FIND ALL SENDERS HEARED BY THIS NODE
 
                     SENDER_ID = sscanf(ADV_DATA.DATA{lineNo}(advDataIdx:advDataIdx+1),'%x');
-                    if SENDER_ID ~= 0 & find(IDs_TO_CONSIDER == SENDER_ID) %ZERO ID IS NOT VALID!
+                    if (SENDER_ID ~= 0) && ( sum(IDs_TO_CONSIDER == SENDER_ID) >= 1 || isempty(IDs_TO_CONSIDER))%ZERO ID IS NOT VALID!
                              j = findNodeIndex(RSSI_MATRIX, SENDER_ID );
                         if j > size(RSSI_MATRIX,1) %IF SENDER_ID IS NOT ALREADY IN THE MATRIX ADD IT
                             RSSI_MATRIX = addIDtoMatrix(RSSI_MATRIX,SENDER_ID); %THIS RESIZES RSSI_MATRIX ADDING ONE LINE AND ONE COLUMN
@@ -185,8 +185,9 @@ for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
     end
 end
 
-RSSI_MATRIX(2:end,1,end) %SWOW IDs
-%MATRIX = MATRIX(:,:,500:end); %DELETE SOME TIME SAMPLES
+%delete unused part of RSSI_MATRIX
+RSSI_MATRIX = RSSI_MATRIX(RSSI_MATRIX(:,1,1) ~= -Inf,RSSI_MATRIX(1,:,1) ~= -Inf,:);
+AVAILABLE_IDs = RSSI_MATRIX(2:end,1,1);
 %% PACKET CHECK
 packetStat = zeros(size(RSSI_MATRIX,1)-1,3); %column 1: ID, column 2: total packets, column 3: missing packets
 packetStat(:,1) = RSSI_MATRIX(2:end,1,end);
@@ -557,7 +558,7 @@ tmp = abs(t_w - xstop);
 % xstop_index = length(graphEdeges_m)-1;
 
 
-nodePositionXY = zeros(length(IDs_TO_CONSIDER),3,xstop_index-xstart_index);
+nodePositionXY = zeros(length(AVAILABLE_IDs),3,xstop_index-xstart_index);
 nodePositionIndex = 1;
 for timeIndexNo = xstart_index : xstop_index
     createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links , '../output/output_m.dot');
