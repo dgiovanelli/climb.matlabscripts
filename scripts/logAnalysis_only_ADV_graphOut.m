@@ -9,17 +9,18 @@ IDs_TO_CONSIDER = []; % set this to empty to select all IDs
 %IDs_TO_CONSIDER = [6, 3, 129, 2, 4, 1];
 %IDs_TO_CONSIDER = [ 48, 50,  52,  72, 70, 51, 53,  58, 54, 57, 62, 61, 60, 56, 55, 75, 67, 65, 64, 68, 66, 49 ];
 if isempty(IDs_TO_CONSIDER) 
-    AMOUNT_OF_NODE = 25;
+    AMOUNT_OF_NODE = 30;
 else
     AMOUNT_OF_NODE = length(IDs_TO_CONSIDER);
 end
 ANDROID = 1; %set this to 1 if the log has been performed with the android app
 SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plotted (and the packet counter info are discarded)
-wsize_sec = 25;
-winc_sec = 5;
-%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
-%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_15.29.53.txt';
-filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_132_7.37.42.txt';
+wsize_sec = 15;
+winc_sec = 1;
+filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/22_02_16/log_53_10.53.49.txt';
+%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_11.11.3.txt';
+%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_133_7.37.2.txt';
+
 delimiter = ' ';
 checkForNonIncrementedPacket = 1;
 %% Format string for each line of text:
@@ -648,7 +649,7 @@ sprintf('Done!\n\n');
 
 figure(205)
 filename = '../output/output_Animation.gif';
-fps = 1/winc_sec*10;
+fps = 1/winc_sec*2;
 colorlist2 = hsv( size(nodePositionXY,1) );
 squareDim = 50;
 for timeIndexNo = 1 : size(nodePositionXY,3)
