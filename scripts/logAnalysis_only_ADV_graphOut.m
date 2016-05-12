@@ -3,25 +3,25 @@ close all;
 clc;
 
 NODE_ID_1 = 2;
-NODE_ID_2 = 4;
+NODE_ID_2 = 7;
 IDs_TO_CONSIDER = []; % set this to empty to select all IDs
 %IDs_TO_CONSIDER = [2,3,4,9,11];
 %IDs_TO_CONSIDER = [6, 3, 129, 2, 4, 1];
 %IDs_TO_CONSIDER = [ 48, 50,  52,  72, 70, 51, 53,  58, 54, 57, 62, 61, 60, 56, 55, 75, 67, 65, 64, 68, 66, 49 ];
 if isempty(IDs_TO_CONSIDER) 
-    AMOUNT_OF_NODE = 20;
+    AMOUNT_OF_NODE = 25;
 else
     AMOUNT_OF_NODE = length(IDs_TO_CONSIDER);
 end
 ANDROID = 1; %set this to 1 if the log has been performed with the android app
 SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plotted (and the packet counter info are discarded)
-wsize_sec = 15;
-winc_sec = 1;
-filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
+wsize_sec = 25;
+winc_sec = 5;
+%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_15.29.53.txt';
-%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_132_7.37.42.txt';
+filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_132_7.37.42.txt';
 delimiter = ' ';
-
+checkForNonIncrementedPacket = 1;
 %% Format string for each line of text:
 %   column1: double (%f)
 %	column2: double (%f)
@@ -184,54 +184,75 @@ for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
        end
     end
 end
-
 %delete unused part of RSSI_MATRIX
 RSSI_MATRIX = RSSI_MATRIX(RSSI_MATRIX(:,1,1) ~= -Inf,RSSI_MATRIX(1,:,1) ~= -Inf,:);
 AVAILABLE_IDs = RSSI_MATRIX(2:end,1,1);
-%% PACKET CHECK
-packetStat = zeros(size(RSSI_MATRIX,1)-1,3); %column 1: ID, column 2: total packets, column 3: missing packets
-packetStat(:,1) = RSSI_MATRIX(2:end,1,end);
-isFirst = 1;
-sampleNo = 1;
 
-%TODO: add battery voltage plot when SHOW_BATTERY_VOLTAGE == 1
-for lineNo = 2:1:size(RSSI_MATRIX,1) %SELECT A LINE, THAT MEANS: SELECT A RECEIVER ID
-    while sampleNo < size(RSSI_MATRIX,3) %ANALYZE ALL TIMESAMPLES
-        if RSSI_MATRIX(lineNo,lineNo,sampleNo) ~= -Inf %IF ADV PKT COUNTER IS -Inf IT MEANS THAT THIS TIMESAMPLE IS RELATED TO ANOTHER RECEIVER, THEN DISCARD IT 
-            
-            packetStat(lineNo-1,2) = packetStat(lineNo-1,2) + 1; %INCREMENT TOTAL PACKETS COUNTER
-            
-            if isFirst == 1 %IF IT IS THE FIRST SAMPLE FOR THIS RECEIVER STORE THE ACTUAL ADV PKT COUNTER, THE NEXT ONE SHOULD BE ACTUAL ADV PKT INDEX + 1
-                
-                nextExpected = RSSI_MATRIX(lineNo,lineNo,sampleNo) + 1;
-                if nextExpected == 256 %REMEMBER THAT EACH FIELD IN ADV PKT IS 8 BIT UNSIGNED INTEGER
-                    nextExpected = 0;
-                end
-                
-                sampleNo = sampleNo + 1;
-                isFirst = 0;
-            else
-                if RSSI_MATRIX(lineNo,lineNo,sampleNo) ~= nextExpected && RSSI_MATRIX(lineNo,lineNo,sampleNo) ~= nextExpected-1 %NB: SOMETIMES ADV PKT COUNTER IS NOT INCREMENTED BY THE NODE, DON'T KNOW WHY...
-                    packetStat(lineNo-1,3) = packetStat(lineNo-1,3) + 1; %IF COUNTER IS DIFFERENT FROM WHAT IS EXPECTED, INCREMENT ERROR COUNTER
-                    nextExpected = nextExpected + 1; 
-                else %THE COUNTER IS WHAT IS EXPECTED
-                    nextExpected = RSSI_MATRIX(lineNo,lineNo,sampleNo) + 1; %SET THE NEW EXPECTED VALUE
-                    sampleNo = sampleNo + 1;
-                end
-                
-                
-                if nextExpected == 256 %REMEMBER THAT EACH FIELD IN ADV PKT IS 8 BIT UNSIGNED INTEGER
-                    nextExpected = 0;
+fprintf('RSSI Matrix created!\n');
+
+
+if SHOW_BATTERY_VOLTAGE == 1
+    %% BATTERY CHECK (TODO)
+else
+    %% PACKET CHECK
+    packetStat = zeros(size(RSSI_MATRIX,1)-1,4); %column 1: ID, column 2: received packets, column 3: missing packets, column 4: double received packets
+    packetStat(:,1) = RSSI_MATRIX(2:end,1,end);
+    isFirst = 1;
+    sampleNo = 1;
+    
+    for lineNo = 2:1:size(RSSI_MATRIX,1) %SELECT A LINE, THAT MEANS: SELECT A RECEIVER ID
+        if RSSI_MATRIX(lineNo,1,1) ~= -Inf
+            while sampleNo <= size(RSSI_MATRIX,3) %ANALYZE ALL TIMESAMPLES
+                if RSSI_MATRIX(lineNo,lineNo,sampleNo) ~= -Inf %IF ADV PKT COUNTER IS inf IT MEANS THAT THIS TIMESAMPLE IS RELATED TO ANOTHER RECEIVER, THEN DISCARD IT
+                    
+                    if isFirst == 1 %IF IT IS THE FIRST SAMPLE FOR THIS RECEIVER STORE THE ACTUAL ADV PKT COUNTER, THE NEXT ONE SHOULD BE ACTUAL ADV PKT INDEX + 1
+                        packetStat(lineNo-1,2) = packetStat(lineNo-1,2) + 1; %INCREMENT TOTAL PACKETS COUNTER
+                        nextExpected = RSSI_MATRIX(lineNo,lineNo,sampleNo) + 1;
+                        sampleNo = sampleNo + 1;
+                        isFirst = 0;
+                    else
+                        if RSSI_MATRIX(lineNo,lineNo,sampleNo) == nextExpected %THE COUNTER IS WHAT IS EXPECTED
+                            %nextExpected = RSSI_MATRIX(lineNo,lineNo,sampleNo) + 1; %SET THE NEW EXPECTED VALUE
+                            packetStat(lineNo-1,2) = packetStat(lineNo-1,2) + 1; %INCREMENT TOTAL PACKETS COUNTER
+                            sampleNo = sampleNo + 1;
+                            nextExpected = nextExpected + 1;
+                        elseif RSSI_MATRIX(lineNo,lineNo,sampleNo) == nextExpected-1 %NB: SOMETIMES ADV PKT COUNTER IS NOT INCREMENTED BY THE NODE, DON'T KNOW WHY...
+                            
+                            if checkForNonIncrementedPacket %%ALLOW NON INCREMENTED PACKET CHECK
+                                %if RSSI_MATRIX(1,1,sampleNo)-RSSI_MATRIX(1,1,sampleNo-1) < 500%1000 % 1000 = 10ms (the same packet can be received on two different adv channels only if they have very similar timestamp)
+                                    packetStat(lineNo-1,4) = packetStat(lineNo-1,4) + 1;
+                                    sampleNo = sampleNo + 1;
+                                %else
+                                %    error('Two identical packets, too close to each other, has been found!!!');
+                                %end
+                            else %%DON'T ALLOW NON INCREMENTED PACKET
+                                packetStat(lineNo-1,3) = packetStat(lineNo-1,3) + 1; %IF COUNTER IS DIFFERENT FROM WHAT IS EXPECTED, INCREMENT ERROR COUNTER
+                            end
+                            
+                        else % THE COUNTER IS NOT WHAT IS EXPECTED
+                            packetStat(lineNo-1,3) = packetStat(lineNo-1,3) + 1; %IF COUNTER IS DIFFERENT FROM WHAT IS EXPECTED, INCREMENT ERROR COUNTER
+                            nextExpected = nextExpected + 1;
+                        end
+                    end
+                    
+                    if nextExpected == 256 %REMEMBER THAT EACH FIELD IN ADV PKT IS 8 BIT UNSIGNED INTEGER
+                        nextExpected = 0;
+                    end
+                    
+                else
+                    sampleNo = sampleNo + 1; %IF THE SAMPLE IS NOT VALID GO TO THE NEXT ONE
                 end
             end
-        else
-            
-            sampleNo = sampleNo + 1; %IF THE SAMPLE IS NOT VALID GO TO THE NEXT ONE
-        
         end
+        sampleNo = 1;
+        isFirst = 1;
     end
-    sampleNo = 1;
-    isFirst = 1;
+    
+    fprintf('Packet check statistics:\n');
+    fprintf('Node ID | received packets | missing packets | PEr\n');
+    for nodeNo = 1 : length(packetStat)
+        fprintf('%02X      | %d               | %d              | %.2f %%\n',packetStat(nodeNo,1), packetStat(nodeNo,2), packetStat(nodeNo,3) ,  packetStat(nodeNo,3) / (packetStat(nodeNo,2) + packetStat(nodeNo,3))*100 );
+    end
 end
 
 %% EXTRACT TAG DATA CREATING A TIME ARRAY AND A DATA ARRAY
@@ -295,16 +316,16 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
             else
                 T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_2to1(1),T_1to2(1))) )';
             end
-%             if(focusId1 == i_id_1 && focusId2 == i_id_2) || (focusId1 == i_id_2 && focusId2 == i_id_1)
-%                 figure;
-%                 plot(T_W*TICK_DURATION,RSSI_Signal_W,T_2to1*TICK_DURATION,RSSI_Signal_2to1,'-.',T_1to2*TICK_DURATION,RSSI_Signal_1to2,'-.');
-%                 legend('merged-filtered-resampled','2to1','1to2');
-%                 xlabel('Time [s]');
-%                 ylabel('RSSI [dBm]');
-%                 grid on;
-%                 title('RSSI between FOCUS ID1 and FOCUS ID2')
-%                 
-%             end
+            if(focusId1 == i_id_1 && focusId2 == i_id_2) || (focusId1 == i_id_2 && focusId2 == i_id_1)
+                figure;
+                plot(T_W*TICK_DURATION,RSSI_Signal_W,T_2to1*TICK_DURATION,RSSI_Signal_2to1,'-.',T_1to2*TICK_DURATION,RSSI_Signal_1to2,'-.');
+                legend('merged-filtered-resampled','2to1','1to2');
+                xlabel('Time [s]');
+                ylabel('RSSI [dBm]');
+                grid on;
+                title('RSSI between FOCUS ID1 and FOCUS ID2')
+                
+            end
             
             if isempty(t_w) %% this is run only once at the first iteration of the nested loops
                 graphEdeges_RSSI = RSSI_Signal_W;
@@ -513,8 +534,7 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
        i = i+1;
     end
 end
-signalsCount
-emptySignalsCount
+
 figure(100)
 grid on;
 plot(T_TAG*TICK_DURATION,ones(size(T_TAG))*(-100),'ro');
@@ -543,17 +563,22 @@ title('All links');
 grid on;
 hold off;
 
-
-%[x,y] = ginput(1);
-xstart = 800;
-xstart = xstart/TICK_DURATION;
-xstop = 1000/TICK_DURATION;
+fprintf('Click on the analysis bounds!\n');
+[x1,~] = ginput(1);
+[x2,~] = ginput(1);
+if x1 > x2 
+    xstop = x1/TICK_DURATION;
+    xstart = x2/TICK_DURATION;
+else
+    xstop = x2/TICK_DURATION;
+    xstart = x1/TICK_DURATION;
+end
 
 tmp = abs(t_w - xstart);
 [ ~ , xstart_index] = min(tmp);
 tmp = abs(t_w - xstop);
 [ ~ , xstop_index] = min(tmp);
-% 
+ 
 % xstart_index = 1;
 % xstop_index = length(graphEdeges_m)-1;
 
@@ -594,8 +619,8 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
         text(nodePositionXY_temp(nodeNo,2)+3,nodePositionXY_temp(nodeNo,3),str,'Color',colorlist2(nodeNo,:),'FontSize',14,'FontWeight','bold');
     end
     str = sprintf('Time = %d, showed %d nodes',xstart_index+timeIndexNo*winc_sec,nodeNo);
-    text(-80,80,str,'FontSize',15,'FontWeight','bold');
-    axis([-90 90 -90 90]);
+    text(-90,90,str,'FontSize',15,'FontWeight','bold');
+    axis([-100 100 -100 100]);
     
     drawnow
     frame = getframe(205);
