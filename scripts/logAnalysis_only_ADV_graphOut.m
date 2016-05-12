@@ -188,7 +188,7 @@ end
 RSSI_MATRIX = RSSI_MATRIX(RSSI_MATRIX(:,1,1) ~= -Inf,RSSI_MATRIX(1,:,1) ~= -Inf,:);
 AVAILABLE_IDs = RSSI_MATRIX(2:end,1,1);
 
-fprintf('RSSI Matrix created!\n');
+fprintf('RSSI MATRIX CREATED!\n\n');
 
 
 if SHOW_BATTERY_VOLTAGE == 1
@@ -248,11 +248,12 @@ else
         isFirst = 1;
     end
     
-    fprintf('Packet check statistics:\n');
+    fprintf('PACKET CHECK STATISTICS:\n');
     fprintf('Node ID | received packets | missing packets | PEr\n');
     for nodeNo = 1 : length(packetStat)
         fprintf('%02X      | %d               | %d              | %.2f %%\n',packetStat(nodeNo,1), packetStat(nodeNo,2), packetStat(nodeNo,3) ,  packetStat(nodeNo,3) / (packetStat(nodeNo,2) + packetStat(nodeNo,3))*100 );
     end
+    fprintf('\n');
 end
 
 %% EXTRACT TAG DATA CREATING A TIME ARRAY AND A DATA ARRAY
@@ -286,6 +287,8 @@ focusId1 = findNodeIndex(RSSI_MATRIX, NODE_ID_1 );
 focusId2 = findNodeIndex(RSSI_MATRIX, NODE_ID_2 );
 emptySignalsCount = 0;
 signalsCount = 0;
+nextPercentPlotIndex = 0;
+fprintf('REORDERING LINKS:\n');
 for i_id_1 = 2:1:size(RSSI_MATRIX,1)
     for i_id_2 = i_id_1+1:size(RSSI_MATRIX,2)
                 
@@ -382,6 +385,16 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
         else
             emptySignalsCount = emptySignalsCount + 1;
         end
+        
+        if i > nextPercentPlotIndex
+            nextPercentPlotIndex = nextPercentPlotIndex + 5;
+            for s=1:length(str)
+                fprintf('\b');
+            end
+            str = sprintf('%.2f done...\n',i/((size(RSSI_MATRIX,1)^2-2*(size(RSSI_MATRIX,1)-1)-size(RSSI_MATRIX,1))/2)*100);
+            fprintf(str);
+        end
+        
 %         %% rssi data for packets sent from node 2 to node 1
 %         if length(T_2to1) > 1
 %             
@@ -530,10 +543,11 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
 %             plot(t_1to2,graphEdeges_RSSI_1to2(:,end),'col',colorlist(i,:))
 %             hold on;
 %         end
-        
-       i = i+1;
+
+    i = i+1;
     end
 end
+fprintf('Done!\n\n');
 
 figure(100)
 grid on;
@@ -582,9 +596,11 @@ tmp = abs(t_w - xstop);
 % xstart_index = 1;
 % xstop_index = length(graphEdeges_m)-1;
 
-
+fprintf('CALCULATING LAYOUT:\n');
 nodePositionXY = zeros(length(AVAILABLE_IDs),3,xstop_index-xstart_index);
 nodePositionIndex = 1;
+nextPercentPlotIndex = xstart_index;
+str = [];
 for timeIndexNo = xstart_index : xstop_index
     createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links , '../output/output_m.dot');
     [status,cmdout] = dos('neato -Tplain ../output/output_m.dot');
@@ -602,6 +618,16 @@ for timeIndexNo = xstart_index : xstop_index
         nodePositionIndex = nodePositionIndex + 1;
         
     end
+    
+    if timeIndexNo > nextPercentPlotIndex
+        nextPercentPlotIndex = nextPercentPlotIndex + (xstop_index-xstart_index)/100;
+        for s=1:length(str)
+            fprintf('\b');
+        end
+        str = sprintf('%.2f done...\n', (timeIndexNo-xstart_index)/(xstop_index-xstart_index)*100);
+        fprintf(str);
+    end
+    
 end
 
 figure(205)
