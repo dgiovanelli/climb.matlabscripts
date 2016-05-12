@@ -649,12 +649,11 @@ for timeIndexNo = xstart_index : xstop_index
     end
     
 end
-%dos('rm ../output/output_m_temp.dot'); %remove the temp .dot file
 sprintf('Done!\n\n');
 
 figure(205)
 filename = '../output/output_Animation.gif';
-fps = 1/winc_sec*2;
+fps = 1/winc_sec*10;
 colorlist2 = hsv( size(nodePositionXY,1) );
 squareDim = 50;
 for timeIndexNo = 1 : size(nodePositionXY,3)
@@ -671,7 +670,7 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
             nodesOutsideSquare = nodesOutsideSquare + 1;
         end
     end
-    str = sprintf('Time = %.0f\n %d nodes inside sqare\n %d nodes outside square',xstart_index+timeIndexNo*winc_sec,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
+    str = sprintf('Time = %.0f\n %d nodes inside the sqare\n %d nodes outside   the square',xstart_index+timeIndexNo*winc_sec,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
     text(-squareDim+5,squareDim-10,str,'FontSize',10,'FontWeight','bold');
     axis([-squareDim squareDim -squareDim squareDim]);
     
