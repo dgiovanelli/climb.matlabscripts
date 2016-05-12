@@ -6,3 +6,4 @@ output/
 output/*
 
 *.asv
+*.log
