@@ -133,9 +133,11 @@ ADV_DATA.SOURCE.NAME = SOURCE_NAME(strcmp(DATA_TYPE,ADV_DATA_TYPE));
 ADV_DATA.DATA = RAW_DATA(strcmp(DATA_TYPE,ADV_DATA_TYPE));
 
 %% CREATE RSSI_MATRIX
-RSSI_MATRIX = -Inf*double(ones(AMOUNT_OF_NODE+1,AMOUNT_OF_NODE+1,8900));%0;%uint32(0);
-str = '';
+fprintf('CREATING RSSI MATRIX:\n');
+
 RSSI_MATRIX = -Inf*double(ones(AMOUNT_OF_NODE+1,AMOUNT_OF_NODE+1,length(ADV_DATA.TIMESTAMP.TIME_TICKS)));%0;%uint32(0);
+str = [];
+nextPercentPlotIndex = 0;
 timeSampleNo=1;
 
 initialOffset = TAG_DATA.TIMESTAMP.TIME_TICKS(1);
@@ -182,7 +184,16 @@ for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
                 end
                 timeSampleNo = timeSampleNo + 1 ;
             end
-       end
+        end
+    end
+    
+    if lineNo > nextPercentPlotIndex
+        nextPercentPlotIndex = nextPercentPlotIndex + length(ADV_DATA.TIMESTAMP.TIME_TICKS)/100;
+        for s=1:length(str)
+            fprintf('\b');
+        end
+        str = sprintf('%.2f percent done...\n', lineNo / length(ADV_DATA.TIMESTAMP.TIME_TICKS)*100);
+        fprintf(str);
     end
 end
 %delete unused part of RSSI_MATRIX
@@ -249,7 +260,7 @@ else
         isFirst = 1;
     end
     
-    fprintf('PACKET CHECK STATISTICS:\n');
+    fprintf('\nPACKET CHECK STATISTICS:\n');
     fprintf('Node ID | received packets | missing packets | PEr\n');
     for nodeNo = 1 : length(packetStat)
         fprintf('%02X      | %d               | %d              | %.2f %%\n',packetStat(nodeNo,1), packetStat(nodeNo,2), packetStat(nodeNo,3) ,  packetStat(nodeNo,3) / (packetStat(nodeNo,2) + packetStat(nodeNo,3))*100 );
@@ -289,6 +300,7 @@ focusId2 = findNodeIndex(RSSI_MATRIX, NODE_ID_2 );
 emptySignalsCount = 0;
 signalsCount = 0;
 nextPercentPlotIndex = 0;
+str = [];
 fprintf('REORDERING LINKS:\n');
 for i_id_1 = 2:1:size(RSSI_MATRIX,1)
     for i_id_2 = i_id_1+1:size(RSSI_MATRIX,2)
@@ -624,21 +636,24 @@ for timeIndexNo = xstart_index : xstop_index
     
     if timeIndexNo > nextPercentPlotIndex
         nextPercentPlotIndex = nextPercentPlotIndex + (xstop_index-xstart_index)/100;
-        for s=1:length(str)
+        for s=1:(length(str))
             fprintf('\b');
         end
-        str = sprintf('%.2f done...\n', (timeIndexNo-xstart_index)/(xstop_index-xstart_index)*100);
+        str = sprintf('%.2f percent done...\n', (timeIndexNo-xstart_index)/(xstop_index-xstart_index)*100);
         fprintf(str);
     end
     
 end
+sprintf('Done!\n\n');
 
 figure(205)
 filename = '../output/output_Animation.gif';
 fps = 1/winc_sec*10;
 colorlist2 = hsv( size(nodePositionXY,1) );
+squareDim = 50;
 for timeIndexNo = 1 : size(nodePositionXY,3)
     nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
+    nodesOutsideSquare = 0;
     plot(nodePositionXY_temp(:,2),nodePositionXY_temp(:,3),'o','LineWidth',3);
     xlabel('[m]?');
     ylabel('[m]?');
@@ -646,10 +661,13 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
     for nodeNo = 1 : length(nodePositionXY_temp)
         str = sprintf('%d',nodePositionXY_temp(nodeNo,1));
         text(nodePositionXY_temp(nodeNo,2)+3,nodePositionXY_temp(nodeNo,3),str,'Color',colorlist2(nodeNo,:),'FontSize',14,'FontWeight','bold');
+        if nodePositionXY_temp(nodeNo,2) > squareDim || nodePositionXY_temp(nodeNo,2) < -squareDim || nodePositionXY_temp(nodeNo,3) > squareDim || nodePositionXY_temp(nodeNo,3) < -squareDim
+            nodesOutsideSquare = nodesOutsideSquare + 1;
+        end
     end
-    str = sprintf('Time = %d, showed %d nodes',xstart_index+timeIndexNo*winc_sec,nodeNo);
-    text(-90,90,str,'FontSize',15,'FontWeight','bold');
-    axis([-100 100 -100 100]);
+    str = sprintf('Time = %.0f\n %d nodes inside sqare\n %d nodes outside square',xstart_index+timeIndexNo*winc_sec,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
+    text(-squareDim+5,squareDim-10,str,'FontSize',10,'FontWeight','bold');
+    axis([-squareDim squareDim -squareDim squareDim]);
     
     drawnow
     frame = getframe(205);
