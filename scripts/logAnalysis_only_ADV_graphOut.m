@@ -17,9 +17,9 @@ ANDROID = 1; %set this to 1 if the log has been performed with the android app
 SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plotted (and the packet counter info are discarded)
 wsize_sec = 15;
 winc_sec = 1;
-filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
+%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_11.11.3.txt';
-%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_133_7.37.2.txt';
+filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_134_7.40.41.txt';
 
 delimiter = ' ';
 checkForNonIncrementedPacket = 1;
@@ -201,7 +201,11 @@ end
 RSSI_MATRIX = RSSI_MATRIX(RSSI_MATRIX(:,1,1) ~= -Inf,RSSI_MATRIX(1,:,1) ~= -Inf,:);
 AVAILABLE_IDs = RSSI_MATRIX(2:end,1,1);
 
-fprintf('RSSI MATRIX CREATED!\n\n');
+for s=1:(length(str))
+    fprintf('\b');
+end
+fprintf('100 percent done...\n');
+fprintf('Done!\n\n');
 
 
 if SHOW_BATTERY_VOLTAGE == 1
@@ -563,6 +567,10 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
         end
     end
 end
+for s=1:(length(str))
+    fprintf('\b');
+end
+fprintf('100 percent done...\n');
 fprintf('Done!\n\n');
 
 figure(100)
@@ -649,7 +657,11 @@ for timeIndexNo = xstart_index : xstop_index
     end
     
 end
-sprintf('Done!\n\n');
+for s=1:(length(str))
+    fprintf('\b');
+end
+fprintf('100 percent done...\n');
+fprintf('Done!\n\n');
 
 figure(205)
 filename = '../output/output_Animation.gif';
