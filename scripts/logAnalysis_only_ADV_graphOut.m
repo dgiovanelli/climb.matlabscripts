@@ -686,7 +686,7 @@ figure(205)
 filename = '../output/output_Animation.gif';
 fps = 1/winc_sec*10;
 colorlist2 = hsv( size(nodePositionXY,1) );
-squareDim = 50;
+squareDim = 100;
 for timeIndexNo = 1 : size(nodePositionXY,3)
     nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
     nodesOutsideSquare = 0;
@@ -702,7 +702,7 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
         end
     end
     str = sprintf('Time = %.0f\n %d nodes inside the sqare\n %d nodes outside   the square',xstart_index+timeIndexNo*winc_sec,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
-    text(-squareDim+5,squareDim-10,str,'FontSize',10,'FontWeight','bold');
+    text(-squareDim+squareDim*0.1,squareDim-squareDim*0.2,str,'FontSize',10,'FontWeight','bold');
     axis([-squareDim squareDim -squareDim squareDim]);
     
     drawnow
