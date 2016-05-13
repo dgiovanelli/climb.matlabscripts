@@ -22,19 +22,8 @@ winc_sec = 1;
 filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_134_7.40.41.txt';
 
 delimiter = ' ';
-checkForNonIncrementedPacket = 1;
+CHECK_FOR_NOT_INCREMENTED_COUNTER = 1;
 %% Format string for each line of text:
-%   column1: double (%f)
-%	column2: double (%f)
-%   column3: double (%f)
-%	column4: double (%f)
-%   column5: double (%f)
-%	column6: double (%f)
-%   column7: double (%f)
-%	column8: text (%s)
-%   column9: text (%s)
-%	column10: text (%s)
-%   column12: text (%s)
 % For more information, see the TEXTSCAN documentation.
 if ANDROID == 1
     formatSpec = '%f%f%f%f%f%f%f%s%s%s%*s%s%[^\n\r]';
@@ -48,19 +37,10 @@ end
 fileID = fopen(filename,'r');
 
 %% Read columns of data according to format string.
-% This call is based on the structure of the file used to generate this
-% code. If an error occurs for a different file, try regenerating the code
-% from the Import Tool.
 dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'MultipleDelimsAsOne', true,  'ReturnOnError', false);
 
 %% Close the text file.
 fclose(fileID);
-
-%% Post processing for unimportable data.
-% No unimportable data rules were applied during the import, so no post
-% processing code is included. To generate code which works for
-% unimportable data, select unimportable cells in a file and regenerate the
-% script.
 
 %% Allocate imported array to column variable names
 if ANDROID == 1
@@ -86,8 +66,7 @@ end
 %% Clear temporary variables
 clearvars filename delimiter formatSpec fileID dataArray ans;
 
-
-%% DATA ANALYSIS
+%% DATA UNPACKING
 GATT_DATA_TYPE = 'GATT';
 ADV_DATA_TYPE = 'ADV';
 TAG_DATA_TYPE = 'TAG';
@@ -104,7 +83,7 @@ GATT_DATA.SOURCE.ADDRESS = SOURCE_ADD(strcmp(DATA_TYPE,GATT_DATA_TYPE));
 GATT_DATA.SOURCE.NAME = SOURCE_NAME(strcmp(DATA_TYPE,GATT_DATA_TYPE));
 GATT_DATA.DATA = RAW_DATA(strcmp(DATA_TYPE,GATT_DATA_TYPE));
 
-% EXTRACT TAG RELATED DATA -- NOT USED
+% EXTRACT TAG RELATED DATA
 TAG_DATA.TIMESTAMP.TIME_S_Y = TIME_S_Y(strcmp(DATA_TYPE,TAG_DATA_TYPE));
 TAG_DATA.TIMESTAMP.TIME_S_M = TIME_S_M(strcmp(DATA_TYPE,TAG_DATA_TYPE));
 TAG_DATA.TIMESTAMP.TIME_S_D = TIME_S_D(strcmp(DATA_TYPE,TAG_DATA_TYPE));
@@ -116,7 +95,6 @@ TAG_DATA.SOURCE.ADDRESS = SOURCE_ADD(strcmp(DATA_TYPE,TAG_DATA_TYPE));
 TAG_DATA.SOURCE.NAME = SOURCE_NAME(strcmp(DATA_TYPE,TAG_DATA_TYPE));
 TAG_DATA.DATA = RAW_DATA(strcmp(DATA_TYPE,TAG_DATA_TYPE));
 
-% EXTRACT ADV RELATED DATA
 % EXTRACT ADV RELATED DATA
 if ANDROID == 1
     ADV_DATA.TIMESTAMP.TIME_TICKS = TIME_S_TICKS(strcmp(DATA_TYPE,ADV_DATA_TYPE));
@@ -140,42 +118,40 @@ RSSI_MATRIX = -Inf*double(ones(AMOUNT_OF_NODE+1,AMOUNT_OF_NODE+1,length(ADV_DATA
 str = [];
 nextPercentPlotIndex = 0;
 timeSampleNo=1;
-
 initialOffset = TAG_DATA.TIMESTAMP.TIME_TICKS(1);
 
 for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
     if strcmp(ADV_DATA.SOURCE.NAME{lineNo},'CLIMBC'); %ONLY CHILD NODES ADV DATA IS ANALYZED HERE
         if ~isempty(ADV_DATA.DATA{lineNo})
             RECEIVER_ID = sscanf(ADV_DATA.DATA{lineNo}(1:2),'%x'); %EXTRACT RECEIVER ID, RECEIVER IS INTENDED TO BE THE NODE THAT RECEIVES OTHER NODES ADV AND RETRANSMIT THEIR RSSI INFORMATION
-            if sum(IDs_TO_CONSIDER == RECEIVER_ID) >= 1 || isempty(IDs_TO_CONSIDER);
-                i = findNodeIndex(RSSI_MATRIX, RECEIVER_ID );
-                if i > size(RSSI_MATRIX,1) %IF RECEIVER_ID IS NOT ALREADY IN THE MATRIX ADD IT
+            if sum(IDs_TO_CONSIDER == RECEIVER_ID) >= 1 || isempty(IDs_TO_CONSIDER); %CHECK IF THE ID BELONGS TO IDs_TO_CONSIDER LIST (IF THAT LIST IS EMPTY ALL IDS HAVE TO BE CONSIDERED VALID)
+                i = findNodeIndex(RSSI_MATRIX, RECEIVER_ID ); %TRY TO FIND ID POSITION INSIDE RSSI_MATRIX
+                if i > size(RSSI_MATRIX,1) %IF THIS CONDITION IS TRUE IT MEANS THAT THE RSSI_MATRIX IS TOO SMALL TO STORE ALL IDS' DATA
                     RSSI_MATRIX = addIDtoMatrix(RSSI_MATRIX,RECEIVER_ID);  %THIS RESIZES RSSI_MATRIX ADDING ONE LINE AND ONE COLUMN
-                else
-                    if(RSSI_MATRIX(i,1,1) == -Inf)
+                else %ELSE, THE RSSI_MATRIX IS NOT STILL FULL
+                    if(RSSI_MATRIX(i,1,1) == -Inf) %IF THIS IS TRUE, IT IS THE FIRST TIME THE ID IS MET (-Inf IS THE INITIALIZATION VALUE), THEN IT NEEDS TO BE ADDED TO RSSI_MATRIX
                         RSSI_MATRIX(i,1,:) = RECEIVER_ID.*ones(size(RSSI_MATRIX(i,1,:)));
                         RSSI_MATRIX(1,i,:) = RECEIVER_ID.*ones(size(RSSI_MATRIX(1,i,:)));
                     end
                 end
-                if(lineNo ~= 1 && timeSampleNo > size(RSSI_MATRIX,3))
+                if(lineNo ~= 1 && timeSampleNo > size(RSSI_MATRIX,3)) %IF THE RSSI_MATRIX HAS TOO FEW TIMESAMPLES ADD ONE
                     RSSI_MATRIX = addTimeSample(RSSI_MATRIX); %EACH ADV PACKET IS TREATED AS A NEW SAMPLE, THEN ADD A NEW TIME SAMPLE (WHICH IS A TWO DIMENSION MATRIX)
                 end
-                %RSSI_MATRIX = addTimeSample(RSSI_MATRIX); %EACH ADV PACKET IS TREATED AS A NEW SAMPLE, THEN ADD A NEW TIME SAMPLE (WHICH IS A TWO DIMENSION MATRIX)
                 RSSI_MATRIX(1,1,timeSampleNo) = ADV_DATA.TIMESTAMP.TIME_TICKS(lineNo) - initialOffset; %THE TIMESTAMP OF EACH SAMPLE IS ALWAYS STORED IN CELL RSSI_MATRIX(1,1,:). ITS UNIT IS MILLISECONDS
-                if SHOW_BATTERY_VOLTAGE == 1 %TODO
-                    RSSI_MATRIX(i,i,timeSampleNo) = uint32( sscanf(ADV_DATA.DATA{lineNo}(end-5:end-2),'%x')); %BATTERY VOLTAGE IS ALWAYS STORED IN THE DIAGONAL RSSI_MATRIX(index_of_RECEIVER_ID,index_of_RECEIVER_ID,: )
-                else
-                    RSSI_MATRIX(i,i,timeSampleNo) = uint8( sscanf(ADV_DATA.DATA{lineNo}(end-1:end),'%x')); %ADV PKT COUNTER IS ALWAYS STORED IN THE DIAGONAL RSSI_MATRIX(index_of_RECEIVER_ID,index_of_RECEIVER_ID,: )
+                if SHOW_BATTERY_VOLTAGE == 1 %IF THIS IS TRUE THE RSSI_MATRIX(i,i,:) CELLS ARE RESERVED FOR BATTERY DATA
+                    RSSI_MATRIX(i,i,timeSampleNo) = uint32( sscanf(ADV_DATA.DATA{lineNo}(end-5:end-2),'%x')); %BATTERY VOLTAGE IS STORED IN THE DIAGONAL RSSI_MATRIX(index_of_RECEIVER_ID,index_of_RECEIVER_ID,: )
+                else %OTHERWISE THEY ARE FILLED WITH PACKET COUNTER
+                    RSSI_MATRIX(i,i,timeSampleNo) = uint8( sscanf(ADV_DATA.DATA{lineNo}(end-1:end),'%x')); %ADV PKT COUNTER IS STORED IN THE DIAGONAL RSSI_MATRIX(index_of_RECEIVER_ID,index_of_RECEIVER_ID,: )
                 end
                 for advDataIdx = 5:4:(numel(ADV_DATA.DATA{lineNo})-6) %FIND ALL SENDERS HEARED BY THIS NODE
 
                     SENDER_ID = sscanf(ADV_DATA.DATA{lineNo}(advDataIdx:advDataIdx+1),'%x');
-                    if (SENDER_ID ~= 0) && ( sum(IDs_TO_CONSIDER == SENDER_ID) >= 1 || isempty(IDs_TO_CONSIDER))%ZERO ID IS NOT VALID!
-                             j = findNodeIndex(RSSI_MATRIX, SENDER_ID );
-                        if j > size(RSSI_MATRIX,1) %IF SENDER_ID IS NOT ALREADY IN THE MATRIX ADD IT
+                    if (SENDER_ID ~= 0) && ( sum(IDs_TO_CONSIDER == SENDER_ID) >= 1 || isempty(IDs_TO_CONSIDER)) %CHECK IF THE SENDER ID BELONGS TO IDs_TO_CONSIDER LIST (IF THAT LIST IS EMPTY ALL IDS HAVE TO BE CONSIDERED VALID)
+                        j = findNodeIndex(RSSI_MATRIX, SENDER_ID ); %TRY TO FIND ID POSITION INSIDE RSSI_MATRIX
+                        if j > size(RSSI_MATRIX,1) %IF THIS CONDITION IS TRUE IT MEANS THAT THE RSSI_MATRIX IS TOO SMALL TO STORE ALL IDS' DATA
                             RSSI_MATRIX = addIDtoMatrix(RSSI_MATRIX,SENDER_ID); %THIS RESIZES RSSI_MATRIX ADDING ONE LINE AND ONE COLUMN
-                        else
-                            if(RSSI_MATRIX(j,1,1) == -Inf)
+                        else 
+                            if(RSSI_MATRIX(j,1,1) == -Inf) %IF THIS IS TRUE, IT IS THE FIRST TIME THE ID IS MET (-Inf IS THE INITIALIZATION VALUE), THEN IT NEEDS TO BE ADDED TO RSSI_MATRIX
                                 RSSI_MATRIX(j,1,:) = SENDER_ID.*ones(size(RSSI_MATRIX(j,1,:)));
                                 RSSI_MATRIX(1,j,:) = SENDER_ID.*ones(size(RSSI_MATRIX(1,j,:)));
                             end
@@ -187,7 +163,7 @@ for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
             end
         end
     end
-    
+    %PLOT PROGRESS PERCENT DATA
     if lineNo > nextPercentPlotIndex
         nextPercentPlotIndex = nextPercentPlotIndex + length(ADV_DATA.TIMESTAMP.TIME_TICKS)/100;
         for s=1:length(str)
@@ -197,7 +173,7 @@ for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
         fprintf(str);
     end
 end
-%delete unused part of RSSI_MATRIX
+%DELETE UNUSED PART OF RSSI_MATRIX
 RSSI_MATRIX = RSSI_MATRIX(RSSI_MATRIX(:,1,1) ~= -Inf,RSSI_MATRIX(1,:,1) ~= -Inf, RSSI_MATRIX(1,1,:) ~= -Inf);
 AVAILABLE_IDs = RSSI_MATRIX(2:end,1,1);
 
@@ -207,7 +183,19 @@ end
 fprintf('100 percent done...\n');
 fprintf('Done!\n\n');
 
+%% EXTRACT TAG DATA CREATING A TIME ARRAY AND A DATA ARRAY
+T_TAG = double.empty;
+DATA_TAG = double.empty;
+for lineNo = 1:1:length(TAG_DATA.TIMESTAMP.TIME_S_Y) 
+    
+    T_TAG = cat(1,T_TAG,TAG_DATA.TIMESTAMP.TIME_TICKS(lineNo));
+    DATA_TAG = cat(1,DATA_TAG,TAG_DATA.DATA(lineNo));
 
+end
+T_TAG = T_TAG - initialOffset;
+
+
+%COUNTER/BATTERY CHECK
 if SHOW_BATTERY_VOLTAGE == 1
     %% BATTERY CHECK
     colorlist=hsv(size(AVAILABLE_IDs,1));
@@ -231,7 +219,7 @@ if SHOW_BATTERY_VOLTAGE == 1
             nodesBatteryData{i_id-1}.BATT_Volt_milliV = BATT_Volt_milliV_temp(1:storedSamples);
             nodesBatteryData{i_id-1}.T_batt_volt = T_batt_volt_temp(1:storedSamples)*TICK_DURATION;
             
-            if ~isempty(T_batt_volt_temp)
+            if ~isempty(nodesBatteryData{i_id-1}.T_batt_volt)
                 legendStrs{i_id} = sprintf('ID: %02x',nodesBatteryData{i_id-1}.ID);              
                 figure(25)
                 plot(nodesBatteryData{i_id-1}.T_batt_volt, nodesBatteryData{i_id-1}.BATT_Volt_milliV ,'o', 'col',colorlist(i_id-1,:) );
@@ -246,17 +234,16 @@ if SHOW_BATTERY_VOLTAGE == 1
     figure(25)
     legend(legendStrs(2:end));
     hold off;
-else
-    %% PACKET CHECK
+else    %% PACKET CHECK
     packetStat = zeros(size(RSSI_MATRIX,1)-1,4); %column 1: ID, column 2: received packets, column 3: missing packets, column 4: double received packets
     packetStat(:,1) = RSSI_MATRIX(2:end,1,end);
-    isFirst = 1;
-    sampleNo = 1;
-    
+      
     for lineNo = 2:1:size(RSSI_MATRIX,1) %SELECT A LINE, THAT MEANS: SELECT A RECEIVER ID
+        isFirst = 1;
+        sampleNo = 1;
         if RSSI_MATRIX(lineNo,1,1) ~= -Inf
             while sampleNo <= size(RSSI_MATRIX,3) %ANALYZE ALL TIMESAMPLES
-                if RSSI_MATRIX(lineNo,lineNo,sampleNo) ~= -Inf %IF ADV PKT COUNTER IS inf IT MEANS THAT THIS TIMESAMPLE IS RELATED TO ANOTHER RECEIVER, THEN DISCARD IT
+                if RSSI_MATRIX(lineNo,lineNo,sampleNo) ~= -Inf %IF ADV PKT COUNTER IS -inf IT MEANS THAT THIS TIMESAMPLE IS RELATED TO ANOTHER RECEIVER, THEN DISCARD IT
                     
                     if isFirst == 1 %IF IT IS THE FIRST SAMPLE FOR THIS RECEIVER STORE THE ACTUAL ADV PKT COUNTER, THE NEXT ONE SHOULD BE ACTUAL ADV PKT INDEX + 1
                         packetStat(lineNo-1,2) = packetStat(lineNo-1,2) + 1; %INCREMENT TOTAL PACKETS COUNTER
@@ -265,20 +252,20 @@ else
                         isFirst = 0;
                     else
                         if RSSI_MATRIX(lineNo,lineNo,sampleNo) == nextExpected %THE COUNTER IS WHAT IS EXPECTED
-                            %nextExpected = RSSI_MATRIX(lineNo,lineNo,sampleNo) + 1; %SET THE NEW EXPECTED VALUE
                             packetStat(lineNo-1,2) = packetStat(lineNo-1,2) + 1; %INCREMENT TOTAL PACKETS COUNTER
-                            sampleNo = sampleNo + 1;
-                            nextExpected = nextExpected + 1;
-                        elseif RSSI_MATRIX(lineNo,lineNo,sampleNo) == nextExpected-1 %NB: SOMETIMES ADV PKT COUNTER IS NOT INCREMENTED BY THE NODE, DON'T KNOW WHY...
+                            sampleNo = sampleNo + 1; 
+                            nextExpected = nextExpected + 1; %SET THE NEW EXPECTED VALUE
+                        elseif RSSI_MATRIX(lineNo,lineNo,sampleNo) == nextExpected-1 %NB: SOMETIMES ADV PKT COUNTER IS NOT INCREMENTED BY THE NODE (OR THE SAME PACKET IS RECEIVED TWICE)
                             
-                            if checkForNonIncrementedPacket %%ALLOW NON INCREMENTED PACKET CHECK
-                                %if RSSI_MATRIX(1,1,sampleNo)-RSSI_MATRIX(1,1,sampleNo-1) < 500%1000 % 1000 = 10ms (the same packet can be received on two different adv channels only if they have very similar timestamp)
+                            if CHECK_FOR_NOT_INCREMENTED_COUNTER %IF CHECK_FOR_NOT_INCREMENTED_COUNTER == 1 THE CHECK ALLOWS TWO OR MORE CONSECUFITVE PACKETS TO HAVE THE SAME COUNTER VALUE
+                                %if RSSI_MATRIX(1,1,sampleNo)-RSSI_MATRIX(1,1,sampleNo-1)< 500%1000 % 1000 = 10ms (the same packet can be received on two different adv channels only if they have very similar timestamp)
+                                    %WHEN A NON INCREMENTED PACKET IS RECEIVED IT IS NOT COUNTED IN TOTAL PACKETS COUNTER
                                     packetStat(lineNo-1,4) = packetStat(lineNo-1,4) + 1;
                                     sampleNo = sampleNo + 1;
                                 %else
                                 %    error('Two identical packets, too close to each other, has been found!!!');
                                 %end
-                            else %%DON'T ALLOW NON INCREMENTED PACKET
+                            else %IF CHECK_FOR_NOT_INCREMENTED_COUNTER == 0 THE CHECK COUNTS AS 255 MISSING PACKETS WHEN TWO IDENTICAL COUNTER VALUE ARE MET IN SEQUENCE
                                 packetStat(lineNo-1,3) = packetStat(lineNo-1,3) + 1; %IF COUNTER IS DIFFERENT FROM WHAT IS EXPECTED, INCREMENT ERROR COUNTER
                             end
                             
@@ -297,8 +284,6 @@ else
                 end
             end
         end
-        sampleNo = 1;
-        isFirst = 1;
     end
     
     fprintf('\nPACKET CHECK STATISTICS:\n');
@@ -308,17 +293,6 @@ else
     end
     fprintf('\n');
 end
-
-%% EXTRACT TAG DATA CREATING A TIME ARRAY AND A DATA ARRAY
-T_TAG = double.empty;
-DATA_TAG = double.empty;
-for lineNo = 1:1:length(TAG_DATA.TIMESTAMP.TIME_S_Y) 
-    
-    T_TAG = cat(1,T_TAG,TAG_DATA.TIMESTAMP.TIME_TICKS(lineNo));
-    DATA_TAG = cat(1,DATA_TAG,TAG_DATA.DATA(lineNo));
-
-end
-T_TAG = T_TAG - initialOffset;
 
 %% ANALYZE RELATIONS BETWEEN NODES
 graphEdeges_RSSI = double.empty;
@@ -350,14 +324,14 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
         T_1to2 = double.empty;
         RSSI_Signal_2to1 = double.empty;
         RSSI_Signal_1to2 = double.empty;
-        for sampleIndex = 1:1:size(RSSI_MATRIX,3)
+        for sampleIndex = 1:1:size(RSSI_MATRIX,3) %SCAN ALL TIMESAMPLES AND EXTRACT RSSI DATA BETWEEN i_id_1 AND i_id_2
             
-            if RSSI_MATRIX(i_id_1,i_id_2,sampleIndex) ~= -Inf
+            if RSSI_MATRIX(i_id_1,i_id_2,sampleIndex) ~= -Inf %IF THIS IS FALSE, THIS TIMESAMPLE DOESN'T HAVE THIS LINK (AT LEAST IN THIS DIRECTION)
                 RSSI_Signal_2to1 = cat(1,RSSI_Signal_2to1,RSSI_MATRIX(i_id_1,i_id_2,sampleIndex));
                 T_2to1 = cat(1,T_2to1,RSSI_MATRIX(1,1,sampleIndex));
             end
             
-            if RSSI_MATRIX(i_id_2,i_id_1,sampleIndex) ~= -Inf
+            if RSSI_MATRIX(i_id_2,i_id_1,sampleIndex) ~= -Inf %IF THIS IS FALSE, THIS TIMESAMPLE DOESN'T HAVE THIS LINK (AT LEAST IN THIS DIRECTION)
                 RSSI_Signal_1to2 = cat(1,RSSI_Signal_1to2,RSSI_MATRIX(i_id_2,i_id_1,sampleIndex));
                 T_1to2 = cat(1,T_1to2,RSSI_MATRIX(1,1,sampleIndex));
             end
@@ -366,8 +340,8 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
         
         %if (size(T_2to1,1) > 1) || (size(T_1to2,1) > 1) %IF AT LEAST ONE OF THE LINKS HAS DATA GO ON
         if ~isempty(T_2to1) || ~isempty(T_1to2) %IF AT LEAST ONE OF THE LINKS HAS DATA GO ON
-            RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc);
-            if ~isempty(RSSI_Signal_W)
+            RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc); %THIS MERGE RSSI DATA FROM BOTH DIRECTION AND RESAMPLE IT AT winc INTERVAL
+            if ~isempty(RSSI_Signal_W) %THIS IS FOR SAFETY SINCE THE ABOVE CHECK SHOULD AVOID EMPTY RSSI_Signal_W
                 if size(T_2to1,1) < 1
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_1to2(1)) )';
                 elseif size(T_1to2,1) < 1
@@ -375,6 +349,7 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
                 else
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_2to1(1),T_1to2(1))) )';
                 end
+                % PLOT FOCUS IDS RSSI IF ANY
                 if(focusId1 == i_id_1 && focusId2 == i_id_2) || (focusId1 == i_id_2 && focusId2 == i_id_1)
                     figure;
                     plot(T_W*TICK_DURATION,RSSI_Signal_W,T_2to1*TICK_DURATION,RSSI_Signal_2to1,'-.',T_1to2*TICK_DURATION,RSSI_Signal_1to2,'-.');
@@ -382,8 +357,7 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
                     xlabel('Time [s]');
                     ylabel('RSSI [dBm]');
                     grid on;
-                    title('RSSI between FOCUS ID1 and FOCUS ID2')
-                    
+                    title('RSSI between FOCUS ID1 and FOCUS ID2');
                 end
                 
                 if isempty(t_w) %% this is run only once at the first iteration of the nested loops
@@ -393,42 +367,46 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
                 else
                     if ((t_w(1) - winc) >= T_W(1)) || (T_W(end) > (t_w(end) )) %%the T_W values are not contained within t_w
                         if (t_w(1) - winc) >= T_W(1) %%the current T_2to1_W array starts before t_2to1 array
-                            %%RESIZE t VECTOR
+                            % CREATE THE MISSING TIME VALUES
                             t_temp = t_w(1):-winc:T_W(1);
+                            % APPEND THEM TO THE OLD t_w
                             t_w = cat(1,t_temp',t_w);
                             
+                            % CREATE MISSING graphEdeges_RSSI SAMPLES
                             graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
-                            graphEdeges_RSSI_temp( size(t_temp,1)+1:end,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
+                            graphEdeges_RSSI_temp( size(t_temp,1)+1:end,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI; %INSERT THE OLD VALUES OF graphEdeges_RSSI IN THE RESIZED VERSION graphEdeges_RSSI_temp
                             
-                            %%if the new data array starts before and ends
-                            %%after the old data copy only the first part, the
-                            %%remaining part will be copied in the next 'if'
+                            % APPEND THE NEW DATA
                             if( size(RSSI_Signal_W,1) <= size(graphEdeges_RSSI_temp,1) )
                                 graphEdeges_RSSI_temp(1:size(RSSI_Signal_W,1),end) = RSSI_Signal_W;
-                            else
+                            else  % if the new data array starts before and ends after the old data copy only the part that starts before, the part that ends after will be copied in the next 'if'
                                 graphEdeges_RSSI_temp(1:end,end) = RSSI_Signal_W(1:size(graphEdeges_RSSI_temp,1));
                             end
+                            % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
                             graphEdeges_RSSI = graphEdeges_RSSI_temp;
                         end
                         
                         if T_W(end) > (t_w(end) ) %%the current T_2to1_W array finishes after t_2to1 array
-                            %%RESIZE t VECTOR
+                            % CREATE THE MISSING TIME VALUES
                             t_temp = t_w(end):winc:T_W(end);
+                            % APPEND THEM TO THE OLD t_w
                             t_w = cat(1,t_w,t_temp');
                             
+                            % CREATE MISSING graphEdeges_RSSI SAMPLES
                             graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
-                            %graphEdeges_RSSI_temp( 1:(size(t_w,1)-size(t_temp,1)) ,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
                             graphEdeges_RSSI_temp( 1:size(graphEdeges_RSSI,1) ,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
                             graphEdeges_RSSI_temp(end-size(RSSI_Signal_W,1)+1 : end,end) = RSSI_Signal_W;
+                            % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
                             graphEdeges_RSSI = graphEdeges_RSSI_temp;
-                            
                         end
-                    else
+                    else % THE T_W ARE CONTAINED WITHIN t_w
+                        % CREATE MISSING graphEdeges_RSSI SAMPLES
                         graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
                         graphEdeges_RSSI_temp(1:end,1:end-1) = graphEdeges_RSSI;
                         tmp = abs(t_w-T_W(1));
                         [ ~ , startingindex] = min(tmp);
                         graphEdeges_RSSI_temp(startingindex:startingindex+length(RSSI_Signal_W)-1,end) = RSSI_Signal_W;
+                        % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
                         graphEdeges_RSSI = graphEdeges_RSSI_temp;
                     end
                     links = cat(2,links, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
