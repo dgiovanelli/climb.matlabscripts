@@ -7,7 +7,9 @@ fprintf(fileID,'graph G {\n');
 %START POSITION
 for index = 1:length(nodeStartPositionXY)
     if sum(nodeStartPositionXY(index,1) == links(:)) ~= 0 % the node with ID nodeStartPositionXY(index,1) is present then set its initial condition
-        fprintf(fileID,'%d [pos="%.4f,%.4f"];\n',nodeStartPositionXY(index,1),nodeStartPositionXY(index,2),nodeStartPositionXY(index,3));
+        if strcmp(sprintf('%.2f',SIGNAL(index)), 'NaN') == 0 && SIGNAL(index) ~= Inf % set the initial condition only if the signal is valid, otherwise the node is inserted in the graph but with no link
+            fprintf(fileID,'%d [pos="%.4f,%.4f"];\n',nodeStartPositionXY(index,1),nodeStartPositionXY(index,2),nodeStartPositionXY(index,3));
+        end
     end
 end
 %LINKS LIST
