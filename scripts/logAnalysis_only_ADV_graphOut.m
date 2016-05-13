@@ -2,8 +2,8 @@ clear all;
 close all;
 clc;
 
-NODE_ID_1 = 2;
-NODE_ID_2 = 7;
+NODE_ID_1 = 78;
+NODE_ID_2 = 61;
 IDs_TO_CONSIDER = []; % set this to empty to select all IDs
 %IDs_TO_CONSIDER = [2,3,4,9,11];
 %IDs_TO_CONSIDER = [6, 3, 129, 2, 4, 1];
@@ -286,7 +286,7 @@ else    %% PACKET CHECK
         end
     end
     
-    fprintf('\nPACKET CHECK STATISTICS:\n');
+    fprintf('PACKET CHECK STATISTICS:\n');
     fprintf('Node ID | received packets | missing packets | PEr\n');
     for nodeNo = 1 : length(packetStat)
         fprintf('%02X      | %d               | %d              | %.2f %%\n',packetStat(nodeNo,1), packetStat(nodeNo,2), packetStat(nodeNo,3) ,  packetStat(nodeNo,3) / (packetStat(nodeNo,2) + packetStat(nodeNo,3))*100 );
@@ -342,18 +342,22 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
         if ~isempty(T_2to1) || ~isempty(T_1to2) %IF AT LEAST ONE OF THE LINKS HAS DATA GO ON
             RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc); %THIS MERGE RSSI DATA FROM BOTH DIRECTION AND RESAMPLE IT AT winc INTERVAL
             if ~isempty(RSSI_Signal_W) %THIS IS FOR SAFETY SINCE THE ABOVE CHECK SHOULD AVOID EMPTY RSSI_Signal_W
-                if size(T_2to1,1) < 1
+                if isempty(T_2to1)
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_1to2(1)) )';
-                elseif size(T_1to2,1) < 1
+                    legendStrs = {'merged-filtered-resampled','raw 2to1','raw 1to2'};
+                elseif isempty(T_1to2)
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_2to1(1)) )';
+                    legendStrs = {'merged-filtered-resampled','raw 2to1'};
                 else
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_2to1(1),T_1to2(1))) )';
+                    legendStrs = {'merged-filtered-resampled','raw 1to2'};
                 end
                 % PLOT FOCUS IDS RSSI IF ANY
                 if(focusId1 == i_id_1 && focusId2 == i_id_2) || (focusId1 == i_id_2 && focusId2 == i_id_1)
                     figure;
                     plot(T_W*TICK_DURATION,RSSI_Signal_W,T_2to1*TICK_DURATION,RSSI_Signal_2to1,'-.',T_1to2*TICK_DURATION,RSSI_Signal_1to2,'-.');
-                    legend('merged-filtered-resampled','2to1','1to2');
+                    legend(legendStrs);
+                    hold off;
                     xlabel('Time [s]');
                     ylabel('RSSI [dBm]');
                     grid on;
@@ -691,7 +695,7 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
     ylabel('[m]?');
     grid on;
     for nodeNo = 1 : size(nodePositionXY_temp,1)
-        str = sprintf('%d',nodePositionXY_temp(nodeNo,1));
+        str = sprintf('%x',nodePositionXY_temp(nodeNo,1));
         text(nodePositionXY_temp(nodeNo,2)+3,nodePositionXY_temp(nodeNo,3),str,'Color',colorlist2(nodeNo,:),'FontSize',14,'FontWeight','bold');
         if nodePositionXY_temp(nodeNo,2) > squareDim || nodePositionXY_temp(nodeNo,2) < -squareDim || nodePositionXY_temp(nodeNo,3) > squareDim || nodePositionXY_temp(nodeNo,3) < -squareDim
             nodesOutsideSquare = nodesOutsideSquare + 1;
