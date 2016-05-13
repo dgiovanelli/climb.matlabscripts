@@ -3,18 +3,22 @@ function createDOTdescriptionFile( SIGNAL, links, filename, nodeStartPositionXY)
 fileID = fopen(filename,'w');
 %HEADER
 fprintf(fileID,'graph G {\n');
-
+stop = 0;
 %START POSITION
 for index = 1:length(nodeStartPositionXY)
     if sum(nodeStartPositionXY(index,1) == links(:)) ~= 0 % the node with ID nodeStartPositionXY(index,1) is present then set its initial condition
-        if strcmp(sprintf('%.2f',SIGNAL(index)), 'NaN') == 0 && SIGNAL(index) ~= Inf % set the initial condition only if the signal is valid, otherwise the node is inserted in the graph but with no link
+        
+        pos1 = find(links(1,:)==nodeStartPositionXY(index,1)); %find links where the first node is nodeStartPositionXY(index,1)
+        pos2 = find(links(2,:)==nodeStartPositionXY(index,1)); %find links where the second node is nodeStartPositionXY(index,1)
+        
+        if ( sum([ (SIGNAL(pos1)~=Inf & ~isnan(SIGNAL(pos1))) , (SIGNAL(pos2)~=Inf & ~isnan(SIGNAL(pos2))) ]) ) ~= 0 %if any of the link with node nodeStartPositionXY(index,1) is different from NaN or Inf the result will be higher than 1
             fprintf(fileID,'%d [pos="%.4f,%.4f"];\n',nodeStartPositionXY(index,1),nodeStartPositionXY(index,2),nodeStartPositionXY(index,3));
         end
     end
 end
 %LINKS LIST
 for index = 1:1:size(links,2)
-    if strcmp(sprintf('%.2f',SIGNAL(index)), 'NaN') == 0 && SIGNAL(index) ~= Inf
+    if ~isnan(SIGNAL(index)) && SIGNAL(index) ~= Inf
         if SIGNAL(index) < 0
             SIGNAL(index) = 0.1;
         end
