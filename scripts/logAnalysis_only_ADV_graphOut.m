@@ -364,12 +364,13 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
             
         end
         
-        if (size(T_2to1,1) > 1) || (size(T_1to2,1) > 1) %let's try with 'or'
+        %if (size(T_2to1,1) > 1) || (size(T_1to2,1) > 1) %IF AT LEAST ONE OF THE LINKS HAS DATA GO ON
+        if ~isempty(T_2to1) || ~isempty(T_1to2) %IF AT LEAST ONE OF THE LINKS HAS DATA GO ON
             RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc);
             if ~isempty(RSSI_Signal_W)
-                if size(T_2to1,1) <= 1
+                if size(T_2to1,1) < 1
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_1to2(1)) )';
-                elseif size(T_1to2,1) <= 1
+                elseif size(T_1to2,1) < 1
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_2to1(1)) )';
                 else
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_2to1(1),T_1to2(1))) )';
