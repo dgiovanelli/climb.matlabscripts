@@ -198,7 +198,7 @@ for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
     end
 end
 %delete unused part of RSSI_MATRIX
-RSSI_MATRIX = RSSI_MATRIX(RSSI_MATRIX(:,1,1) ~= -Inf,RSSI_MATRIX(1,:,1) ~= -Inf,:);
+RSSI_MATRIX = RSSI_MATRIX(RSSI_MATRIX(:,1,1) ~= -Inf,RSSI_MATRIX(1,:,1) ~= -Inf, RSSI_MATRIX(1,1,:) ~= -Inf);
 AVAILABLE_IDs = RSSI_MATRIX(2:end,1,1);
 
 for s=1:(length(str))
@@ -209,7 +209,43 @@ fprintf('Done!\n\n');
 
 
 if SHOW_BATTERY_VOLTAGE == 1
-    %% BATTERY CHECK (TODO)
+    %% BATTERY CHECK
+    colorlist=hsv(size(AVAILABLE_IDs,1));
+    legendStrs = cell(size(AVAILABLE_IDs,1),1);
+    nodesBatteryData = cell(size(AVAILABLE_IDs,1),1);
+    for i_id = 2:1:size(AVAILABLE_IDs,1)+1
+        %if RSSI_MATRIX(i_id,1,end) ~= -Inf
+            BATT_Volt_milliV_temp = ones(size(RSSI_MATRIX,3),1)*(-Inf);
+            T_batt_volt_temp = ones(size(RSSI_MATRIX,3),1)*(-Inf);
+            storedSamples = 0;
+            %scan all matrix and store battery voltage data
+            for sampleIndex = 1:1:size(RSSI_MATRIX,3)
+                if RSSI_MATRIX(i_id,i_id,sampleIndex) ~= -Inf
+                    storedSamples = storedSamples + 1;
+                    BATT_Volt_milliV_temp(storedSamples) = RSSI_MATRIX(i_id,i_id,sampleIndex);
+                    T_batt_volt_temp(storedSamples) = RSSI_MATRIX(1,1,sampleIndex);
+                end
+            end
+            %cut unused part of battery data vectors and store them in the cell array
+            nodesBatteryData{i_id-1}.ID = AVAILABLE_IDs(i_id-1);
+            nodesBatteryData{i_id-1}.BATT_Volt_milliV = BATT_Volt_milliV_temp(1:storedSamples);
+            nodesBatteryData{i_id-1}.T_batt_volt = T_batt_volt_temp(1:storedSamples)*TICK_DURATION;
+            
+            if ~isempty(T_batt_volt_temp)
+                legendStrs{i_id} = sprintf('ID: %02x',nodesBatteryData{i_id-1}.ID);              
+                figure(25)
+                plot(nodesBatteryData{i_id-1}.T_batt_volt, nodesBatteryData{i_id-1}.BATT_Volt_milliV ,'o', 'col',colorlist(i_id-1,:) );
+                axis([0 RSSI_MATRIX(1,1,end)*TICK_DURATION, 0, 3300]);
+                xlabel('Time [s]');
+                ylabel('battery voltage [mV]');
+                grid on;
+                hold on;
+            end
+        %end
+    end
+    figure(25)
+    legend(legendStrs(2:end));
+    hold off;
 else
     %% PACKET CHECK
     packetStat = zeros(size(RSSI_MATRIX,1)-1,4); %column 1: ID, column 2: received packets, column 3: missing packets, column 4: double received packets
@@ -397,9 +433,9 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
                     links = cat(2,links, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
                 end
                 
-                figure(100)
-                plot(t_w*TICK_DURATION,graphEdeges_RSSI(:,end),'col',colorlist(i,:))
-                hold on;
+%                 figure(100)
+%                 plot(t_w*TICK_DURATION,graphEdeges_RSSI(:,end),'col',colorlist(i,:))
+%                 hold on;
                 signalsCount = signalsCount + 1;
             else
                 emptySignalsCount = emptySignalsCount + 1;
@@ -573,13 +609,13 @@ end
 fprintf('100 percent done...\n');
 fprintf('Done!\n\n');
 
-figure(100)
-grid on;
-plot(T_TAG*TICK_DURATION,ones(size(T_TAG))*(-100),'ro');
-xlabel('Time [s]');
-ylabel('RSSI [dBm]');
-title('All links');
-hold off;
+% figure(100)
+% grid on;
+% plot(T_TAG*TICK_DURATION,ones(size(T_TAG))*(-100),'ro');
+% xlabel('Time [s]');
+% ylabel('RSSI [dBm]');
+% title('All links');
+% hold off;
 
 
 % t_w = double(t_w)/(60);
