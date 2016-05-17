@@ -1,7 +1,7 @@
 function output = timeBasedTwoDirectionsMerge(t1, signal1,t2, signal2, wsize, winc) %t, wsize, and winc must have the same unit
 
 if isempty( t1 ) || isempty( t2 )
-    if isempty( t1 ) && isempty( t1 )
+    if isempty( t1 ) && isempty( t2 )
         output = []; %it should not reach here
         return
     else
