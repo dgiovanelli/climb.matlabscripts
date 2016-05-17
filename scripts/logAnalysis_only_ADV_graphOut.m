@@ -15,6 +15,7 @@ else
 end
 ANDROID = 1; %set this to 1 if the log has been performed with the android app
 SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plotted (and the packet counter info are discarded)
+CENTER_ON_MASTER = 1; %if this is set to 1 the layout is plot centered on master node
 wsize_sec = 15;
 winc_sec = 1;
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
@@ -408,8 +409,8 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
         end
         
         %if (size(T_2to1,1) > 1) || (size(T_1to2,1) > 1) %IF AT LEAST ONE OF THE LINKS HAS DATA GO ON
-        if ~isempty(T_2to1) || ~isempty(T_1to2) %IF AT LEAST ONE OF THE LINKS HAS DATA GO ON
-            RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc); %THIS MERGE RSSI DATA FROM BOTH DIRECTION AND RESAMPLE IT AT winc INTERVAL
+        if ~isempty(T_2to1) || ~isempty(T_1to2) %IF AT LEAST ONE OF THE LINKS HAS DATA, GO ON!
+            RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc); %THIS MERGES RSSI DATA FROM BOTH DIRECTION AND RESAMPLE IT AT winc INTERVAL
             if ~isempty(RSSI_Signal_W) %THIS IS FOR SAFETY SINCE THE ABOVE CHECK SHOULD AVOID EMPTY RSSI_Signal_W
                 if isempty(T_2to1)
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_1to2(1)) )';
@@ -714,6 +715,7 @@ nodePositionIndex = 1;
 nextPercentPlotIndex = xstart_index;
 str = [];
 for timeIndexNo = xstart_index : xstop_index
+    MASTER_OFFSET_XY = [0,0];
     if timeIndexNo == xstart_index
         createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links , '../output/output_m_temp.dot',[]);
     else
@@ -728,9 +730,23 @@ for timeIndexNo = xstart_index : xstop_index
             if( tLine(1) == 'n' && tLine(2) == 'o' && tLine(3) == 'd' && tLine(4) == 'e')
                 k = findNodeIndex(RSSI_MATRIX(:,:,1), tLine(5) );
                 nodePositionXY(k-1,:,nodePositionIndex) = tLine(5:7)';
+                if tLine(5) == 254 %NB: 254 is used for master (regardless its mac)
+                    k_master = k;
+                    if CENTER_ON_MASTER == 1
+                        MASTER_OFFSET_XY = nodePositionXY(k-1,2:3,nodePositionIndex);
+                        nodePositionXY(k-1,:,nodePositionIndex) = tLine(5:7)';
+                    end
+                end
             end
         end
         
+        if CENTER_ON_MASTER == 1 && sum(MASTER_OFFSET_XY) ~= 0
+            for i_id = 1:size(nodePositionXY,1)
+                if nodePositionXY(i_id,1,nodePositionIndex) ~= 0
+                    nodePositionXY(i_id,2:3,nodePositionIndex) = nodePositionXY(i_id,2:3,nodePositionIndex) - nodePositionXY(k_master-1,2:3,nodePositionIndex);
+                end
+            end
+        end
         nodePositionIndex = nodePositionIndex + 1;
         
     end
