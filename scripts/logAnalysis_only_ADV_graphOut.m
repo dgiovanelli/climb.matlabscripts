@@ -254,6 +254,7 @@ fprintf('100 percent of GATT DATA done...\n');
 fprintf('Done!\n\n');
 
 %% EXTRACT TAG DATA CREATING A TIME ARRAY AND A DATA ARRAY
+fprintf('GETTING TAGS DATA.\n');
 T_TAG = double.empty;
 DATA_TAG = double.empty;
 for lineNo = 1:1:length(TAG_DATA.TIMESTAMP.TIME_S_Y) 
@@ -263,10 +264,11 @@ for lineNo = 1:1:length(TAG_DATA.TIMESTAMP.TIME_S_Y)
 
 end
 T_TAG = T_TAG - initialOffset;
-
+fprintf('Done!\n\n');
 
 %COUNTER/BATTERY CHECK
 if SHOW_BATTERY_VOLTAGE == 1
+    fprintf('GETTING BATTERY VOLTAGE DATA.\n');
     %% BATTERY CHECK
     colorlist=hsv(size(AVAILABLE_IDs,1));
     legendStrs = cell(size(AVAILABLE_IDs,1),1);
@@ -304,7 +306,9 @@ if SHOW_BATTERY_VOLTAGE == 1
     figure(25)
     legend(legendStrs(2:end));
     hold off;
+    fprintf('Done!\n\n');
 else    %% PACKET CHECK
+    fprintf('GETTING PACKET STATISTICS.\n');
     packetStat = zeros(size(RSSI_MATRIX,1)-1,4); %column 1: ID, column 2: received packets, column 3: missing packets, column 4: double received packets
     packetStat(:,1) = RSSI_MATRIX(2:end,1,end);
       
@@ -355,6 +359,7 @@ else    %% PACKET CHECK
             end
         end
     end
+    fprintf('Done!\n\n');
     
     fprintf('PACKET CHECK STATISTICS:\n');
     fprintf('Node ID | received packets | missing packets | PEr\n');
@@ -363,7 +368,6 @@ else    %% PACKET CHECK
     end
     fprintf('\n');
 end
-
 %% ANALYZE RELATIONS BETWEEN NODES
 graphEdeges_RSSI = double.empty;
 links=double.empty;
