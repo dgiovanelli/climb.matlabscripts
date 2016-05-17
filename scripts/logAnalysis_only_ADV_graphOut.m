@@ -16,6 +16,7 @@ end
 ANDROID = 1; %set this to 1 if the log has been performed with the android app
 SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plotted (and the packet counter info are discarded)
 CENTER_ON_MASTER = 1; %if this is set to 1 the layout is plot centered on master node
+PLOT_NODE_LABELS = 0; %setting this to 1 node labels are removed from plot, and the master node is plotted in red
 wsize_sec = 15;
 winc_sec = 1;
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
@@ -780,8 +781,10 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
     ylabel('[m]?');
     grid on;
     for nodeNo = 1 : size(nodePositionXY_temp,1)
-        str = sprintf('%x',nodePositionXY_temp(nodeNo,1));
-        text(nodePositionXY_temp(nodeNo,2)+3,nodePositionXY_temp(nodeNo,3),str,'Color',colorlist2(nodeNo,:),'FontSize',14,'FontWeight','bold');
+        if PLOT_NODE_LABELS == 1
+            str = sprintf('%x',nodePositionXY_temp(nodeNo,1));
+            text(nodePositionXY_temp(nodeNo,2)+3,nodePositionXY_temp(nodeNo,3),str,'Color',colorlist2(nodeNo,:),'FontSize',14,'FontWeight','bold');
+        end
         if nodePositionXY_temp(nodeNo,2) > squareDim || nodePositionXY_temp(nodeNo,2) < -squareDim || nodePositionXY_temp(nodeNo,3) > squareDim || nodePositionXY_temp(nodeNo,3) < -squareDim
             nodesOutsideSquare = nodesOutsideSquare + 1;
         end
