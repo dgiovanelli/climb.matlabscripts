@@ -19,7 +19,7 @@ wsize_sec = 15;
 winc_sec = 1;
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_11.11.3.txt';
-filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_134_7.40.41.txt';
+filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_138_7.33.51.txt';
 
 delimiter = ' ';
 CHECK_FOR_NOT_INCREMENTED_COUNTER = 1;
@@ -82,6 +82,16 @@ GATT_DATA.TIMESTAMP.TIME_S_TICKS = TIME_S_TICKS(strcmp(DATA_TYPE,GATT_DATA_TYPE)
 GATT_DATA.SOURCE.ADDRESS = SOURCE_ADD(strcmp(DATA_TYPE,GATT_DATA_TYPE));
 GATT_DATA.SOURCE.NAME = SOURCE_NAME(strcmp(DATA_TYPE,GATT_DATA_TYPE));
 GATT_DATA.DATA = RAW_DATA(strcmp(DATA_TYPE,GATT_DATA_TYPE));
+if ANDROID == 1
+    GATT_DATA.TIMESTAMP.TIME_TICKS = TIME_S_TICKS(strcmp(DATA_TYPE,GATT_DATA_TYPE));
+    GATT_DATA.TIMESTAMP.TIME_S_S = TIME_S_S(strcmp(DATA_TYPE,GATT_DATA_TYPE));
+    GATT_DATA.TIMESTAMP.TIME_S_MIN = TIME_S_MIN(strcmp(DATA_TYPE,GATT_DATA_TYPE));
+    GATT_DATA.TIMESTAMP.TIME_S_H = TIME_S_H(strcmp(DATA_TYPE,GATT_DATA_TYPE));
+    GATT_DATA.TIMESTAMP.TIME_S_D = TIME_S_D(strcmp(DATA_TYPE,GATT_DATA_TYPE));
+    GATT_DATA.TIMESTAMP.TIME_S_M = TIME_S_M(strcmp(DATA_TYPE,GATT_DATA_TYPE));
+else
+    GATT_DATA.TIMESTAMP.TIME_TICKS = TIME_S_TICKS(strcmp(DATA_TYPE,GATT_DATA_TYPE));
+end
 
 % EXTRACT TAG RELATED DATA
 TAG_DATA.TIMESTAMP.TIME_S_Y = TIME_S_Y(strcmp(DATA_TYPE,TAG_DATA_TYPE));
@@ -103,8 +113,7 @@ if ANDROID == 1
     ADV_DATA.TIMESTAMP.TIME_S_H = TIME_S_H(strcmp(DATA_TYPE,ADV_DATA_TYPE));
     ADV_DATA.TIMESTAMP.TIME_S_D = TIME_S_D(strcmp(DATA_TYPE,ADV_DATA_TYPE));
     ADV_DATA.TIMESTAMP.TIME_S_M = TIME_S_M(strcmp(DATA_TYPE,ADV_DATA_TYPE));
-    
-else
+ else
     ADV_DATA.TIMESTAMP.TIME_TICKS = TIME_S_TICKS(strcmp(DATA_TYPE,ADV_DATA_TYPE));
 end
 ADV_DATA.SOURCE.ADDRESS = SOURCE_ADD(strcmp(DATA_TYPE,ADV_DATA_TYPE));
@@ -114,12 +123,13 @@ ADV_DATA.DATA = RAW_DATA(strcmp(DATA_TYPE,ADV_DATA_TYPE));
 %% CREATE RSSI_MATRIX
 fprintf('CREATING RSSI MATRIX:\n');
 
-RSSI_MATRIX = -Inf*double(ones(AMOUNT_OF_NODE+1,AMOUNT_OF_NODE+1,length(ADV_DATA.TIMESTAMP.TIME_TICKS)));%0;%uint32(0);
+RSSI_MATRIX = -Inf*double(ones(AMOUNT_OF_NODE+1,AMOUNT_OF_NODE+1,length(ADV_DATA.TIMESTAMP.TIME_TICKS)+length(GATT_DATA.TIMESTAMP.TIME_TICKS)));%0;%uint32(0);
 str = [];
 nextPercentPlotIndex = 0;
 timeSampleNo=1;
 initialOffset = TAG_DATA.TIMESTAMP.TIME_TICKS(1);
 
+%%ADV DATA
 for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
     if strcmp(ADV_DATA.SOURCE.NAME{lineNo},'CLIMBC'); %ONLY CHILD NODES ADV DATA IS ANALYZED HERE
         if ~isempty(ADV_DATA.DATA{lineNo})
@@ -169,7 +179,65 @@ for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
         for s=1:length(str)
             fprintf('\b');
         end
-        str = sprintf('%.2f percent done...\n', lineNo / length(ADV_DATA.TIMESTAMP.TIME_TICKS)*100);
+        str = sprintf('%.2f percent of ADV DATA done...\n', lineNo / length(ADV_DATA.TIMESTAMP.TIME_TICKS)*100);
+        fprintf(str);
+    end
+end
+
+for s=1:(length(str))
+    fprintf('\b');
+end
+fprintf('100 percent of ADV DATA done...\n');
+fprintf('Done!\n\n');
+str = [];
+%GATT DATA
+nextPercentPlotIndex = 0;
+for lineNo = 1:1:length(GATT_DATA.TIMESTAMP.TIME_TICKS)
+    %if strcmp(GATT_DATA.SOURCE.NAME{lineNo},'CLIMBM'); %ONLY MASTER GATT DATA IS ANALYZED HERE
+        if ~isempty(GATT_DATA.DATA{lineNo})
+            MASTER_ID = 254; %%254 is fixed for master ID
+            %if sum(IDs_TO_CONSIDER == RECEIVER_ID) >= 1 || isempty(IDs_TO_CONSIDER); %CHECK IF THE ID BELONGS TO IDs_TO_CONSIDER LIST (IF THAT LIST IS EMPTY ALL IDS HAVE TO BE CONSIDERED VALID)
+                i = findNodeIndex(RSSI_MATRIX, MASTER_ID ); %TRY TO FIND ID POSITION INSIDE RSSI_MATRIX
+                if i > size(RSSI_MATRIX,1) %IF THIS CONDITION IS TRUE IT MEANS THAT THE RSSI_MATRIX IS TOO SMALL TO STORE ALL IDS' DATA
+                    RSSI_MATRIX = addIDtoMatrix(RSSI_MATRIX,MASTER_ID);  %THIS RESIZES RSSI_MATRIX ADDING ONE LINE AND ONE COLUMN
+                else %ELSE, THE RSSI_MATRIX IS NOT STILL FULL
+                    if(RSSI_MATRIX(i,1,1) == -Inf) %IF THIS IS TRUE, IT IS THE FIRST TIME THE ID IS MET (-Inf IS THE INITIALIZATION VALUE), THEN IT NEEDS TO BE ADDED TO RSSI_MATRIX
+                        RSSI_MATRIX(i,1,:) = MASTER_ID.*ones(size(RSSI_MATRIX(i,1,:)));
+                        RSSI_MATRIX(1,i,:) = MASTER_ID.*ones(size(RSSI_MATRIX(1,i,:)));
+                    end
+                end
+                if(lineNo ~= 1 && timeSampleNo > size(RSSI_MATRIX,3)) %IF THE RSSI_MATRIX HAS TOO FEW TIMESAMPLES ADD ONE
+                    RSSI_MATRIX = addTimeSample(RSSI_MATRIX); %EACH ADV PACKET IS TREATED AS A NEW SAMPLE, THEN ADD A NEW TIME SAMPLE (WHICH IS A TWO DIMENSION MATRIX)
+                end
+                RSSI_MATRIX(1,1,timeSampleNo) = GATT_DATA.TIMESTAMP.TIME_TICKS(lineNo) - initialOffset; %THE TIMESTAMP OF EACH SAMPLE IS ALWAYS STORED IN CELL RSSI_MATRIX(1,1,:). ITS UNIT IS MILLISECONDS
+                % NO PACKET COUNTER OR BATTERY INFO IS SENT THROUGH GATT, AT LEAST FOR NOW
+                for advDataIdx = 1:6:(numel(GATT_DATA.DATA{lineNo})) %FIND ALL SENDERS HEARED BY THE MASTER
+
+                    SENDER_ID = sscanf(GATT_DATA.DATA{lineNo}(advDataIdx:advDataIdx+1),'%x');
+                    if (SENDER_ID ~= 0) && ( sum(IDs_TO_CONSIDER == SENDER_ID) >= 1 || isempty(IDs_TO_CONSIDER)) %CHECK IF THE SENDER ID BELONGS TO IDs_TO_CONSIDER LIST (IF THAT LIST IS EMPTY ALL IDS HAVE TO BE CONSIDERED VALID)
+                        j = findNodeIndex(RSSI_MATRIX, SENDER_ID ); %TRY TO FIND ID POSITION INSIDE RSSI_MATRIX
+                        if j > size(RSSI_MATRIX,1) %IF THIS CONDITION IS TRUE IT MEANS THAT THE RSSI_MATRIX IS TOO SMALL TO STORE ALL IDS' DATA
+                            RSSI_MATRIX = addIDtoMatrix(RSSI_MATRIX,SENDER_ID); %THIS RESIZES RSSI_MATRIX ADDING ONE LINE AND ONE COLUMN
+                        else 
+                            if(RSSI_MATRIX(j,1,1) == -Inf) %IF THIS IS TRUE, IT IS THE FIRST TIME THE ID IS MET (-Inf IS THE INITIALIZATION VALUE), THEN IT NEEDS TO BE ADDED TO RSSI_MATRIX
+                                RSSI_MATRIX(j,1,:) = SENDER_ID.*ones(size(RSSI_MATRIX(j,1,:)));
+                                RSSI_MATRIX(1,j,:) = SENDER_ID.*ones(size(RSSI_MATRIX(1,j,:)));
+                            end
+                        end
+                        RSSI_MATRIX(i,j,timeSampleNo) =  double( typecast( uint8(sscanf(GATT_DATA.DATA{lineNo}(advDataIdx+4:advDataIdx+5),'%x')) ,'int8') ); %STORE RSSI VALUE IN THE PROPPER POSITION
+                    end
+                end
+                timeSampleNo = timeSampleNo + 1 ;
+            %end
+        end
+    %end
+    %PLOT PROGRESS PERCENT DATA
+    if lineNo > nextPercentPlotIndex
+        nextPercentPlotIndex = nextPercentPlotIndex + length(GATT_DATA.TIMESTAMP.TIME_TICKS)/100;
+        for s=1:length(str)
+            fprintf('\b');
+        end
+        str = sprintf('%.2f percent of GATT DATA done...\n', lineNo / length(GATT_DATA.TIMESTAMP.TIME_TICKS)*100);
         fprintf(str);
     end
 end
@@ -180,7 +248,7 @@ AVAILABLE_IDs = RSSI_MATRIX(2:end,1,1);
 for s=1:(length(str))
     fprintf('\b');
 end
-fprintf('100 percent done...\n');
+fprintf('100 percent of GATT DATA done...\n');
 fprintf('Done!\n\n');
 
 %% EXTRACT TAG DATA CREATING A TIME ARRAY AND A DATA ARRAY
@@ -319,11 +387,12 @@ str = [];
 fprintf('REORDERING LINKS:\n');
 for i_id_1 = 2:1:size(RSSI_MATRIX,1)
     for i_id_2 = i_id_1+1:size(RSSI_MATRIX,2)
-                
         T_2to1 = double.empty;
         T_1to2 = double.empty;
         RSSI_Signal_2to1 = double.empty;
         RSSI_Signal_1to2 = double.empty;
+        RSSI_Signal_W = double.empty;
+
         for sampleIndex = 1:1:size(RSSI_MATRIX,3) %SCAN ALL TIMESAMPLES AND EXTRACT RSSI DATA BETWEEN i_id_1 AND i_id_2
             
             if RSSI_MATRIX(i_id_1,i_id_2,sampleIndex) ~= -Inf %IF THIS IS FALSE, THIS TIMESAMPLE DOESN'T HAVE THIS LINK (AT LEAST IN THIS DIRECTION)
