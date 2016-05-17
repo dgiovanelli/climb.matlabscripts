@@ -2,8 +2,8 @@ clear all;
 close all;
 clc;
 
-NODE_ID_1 = 78;
-NODE_ID_2 = 61;
+FOCUS_ID_1 = 2;
+FOCUS_ID_2 = 1;
 IDs_TO_CONSIDER = []; % set this to empty to select all IDs
 %IDs_TO_CONSIDER = [2,3,4,9,11];
 %IDs_TO_CONSIDER = [6, 3, 129, 2, 4, 1];
@@ -378,8 +378,8 @@ wsize = wsize_sec / TICK_DURATION;
 winc = winc_sec / TICK_DURATION;
 colorlist=hsv( (size(RSSI_MATRIX,1)^2-2*(size(RSSI_MATRIX,1)-1)-size(RSSI_MATRIX,1))/2 );
 i=1;
-focusId1 = findNodeIndex(RSSI_MATRIX, NODE_ID_1 );
-focusId2 = findNodeIndex(RSSI_MATRIX, NODE_ID_2 );
+focusId1 = findNodeIndex(RSSI_MATRIX, FOCUS_ID_1 );
+focusId2 = findNodeIndex(RSSI_MATRIX, FOCUS_ID_2 );
 emptySignalsCount = 0;
 signalsCount = 0;
 nextPercentPlotIndex = 0;
