@@ -7,3 +7,5 @@ output/*
 
 *.asv
 *.log
+
+last_run.mat
