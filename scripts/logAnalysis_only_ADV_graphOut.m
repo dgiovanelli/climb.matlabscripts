@@ -775,7 +775,7 @@ squareDim = 100;
 for timeIndexNo = 1 : size(nodePositionXY,3)
     nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
     nodesOutsideSquare = 0;
-    plot(nodePositionXY_temp(:,2),nodePositionXY_temp(:,3),'o','LineWidth',3);
+    plot(nodePositionXY_temp(nodePositionXY_temp(:,1)~=254,2),nodePositionXY_temp(nodePositionXY_temp(:,1)~=254,3),'o',nodePositionXY_temp(nodePositionXY_temp(:,1)==254,2),nodePositionXY_temp(nodePositionXY_temp(:,1)==254,3),'ro','LineWidth',3);
     xlabel('[m]?');
     ylabel('[m]?');
     grid on;
