@@ -610,6 +610,7 @@ end
 fprintf('100 percent done...\n');
 fprintf('Done!\n\n');
 
+%% PLOTTING AND EXPORTING NODES LAYOUT
 figure(205)
 filename = '../output/output_Animation.gif';
 fps = 1/winc_sec*10;
@@ -618,7 +619,10 @@ squareDim = 100;
 for timeIndexNo = 1 : size(nodePositionXY,3)
     nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
     nodesOutsideSquare = 0;
-    plot(nodePositionXY_temp(nodePositionXY_temp(:,1)~=254,2),nodePositionXY_temp(nodePositionXY_temp(:,1)~=254,3),'o',nodePositionXY_temp(nodePositionXY_temp(:,1)==254,2),nodePositionXY_temp(nodePositionXY_temp(:,1)==254,3),'ro','LineWidth',3);
+    regularNodesPositionXY_temp =  nodePositionXY_temp(nodePositionXY_temp(:,1)~=254 & nodePositionXY_temp(:,1)~=FOCUS_ID_1 & nodePositionXY_temp(:,1)~=FOCUS_ID_2,:);
+    masterNodePositionXY_temp = nodePositionXY_temp(nodePositionXY_temp(:,1)==254,:);
+    focusNodesPositionXY_temp = nodePositionXY_temp(nodePositionXY_temp(:,1)==FOCUS_ID_1 | nodePositionXY_temp(:,1)==FOCUS_ID_2,:);
+    plot(regularNodesPositionXY_temp(:,2),regularNodesPositionXY_temp(:,3),'bo',masterNodePositionXY_temp(:,2),masterNodePositionXY_temp(:,3),'ro',focusNodesPositionXY_temp(:,2),focusNodesPositionXY_temp(:,3),'go','LineWidth',3);
     xlabel('[m]?');
     ylabel('[m]?');
     grid on;
