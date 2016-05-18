@@ -2,8 +2,8 @@ clear all;
 close all;
 clc;
 
-FOCUS_ID_1 = 2;
-FOCUS_ID_2 = 1;
+FOCUS_ID_1 = 9;
+FOCUS_ID_2 = 254;
 IDs_TO_CONSIDER = []; % set this to empty to select all IDs
 %IDs_TO_CONSIDER = [2,3,4,9,11];
 %IDs_TO_CONSIDER = [6, 3, 129, 2, 4, 1];
@@ -417,14 +417,14 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
         if ~isempty(T_2to1) || ~isempty(T_1to2) %IF AT LEAST ONE OF THE LINKS HAS DATA, GO ON!
             RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc); %THIS MERGES RSSI DATA FROM BOTH DIRECTION AND RESAMPLE IT AT winc INTERVAL
             if ~isempty(RSSI_Signal_W) %THIS IS FOR SAFETY SINCE THE ABOVE CHECK SHOULD AVOID EMPTY RSSI_Signal_W
-                if isempty(T_2to1)
-                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_1to2(1)) )';
+                if (isempty(T_2to1) + isempty(T_1to2)) == 0 % both are non empty
+                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min([ T_2to1',T_1to2' ])) )';
                     legendStrs = {'merged-filtered-resampled','raw 2to1','raw 1to2'};
                 elseif isempty(T_1to2)
-                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(T_2to1(1)) )';
+                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_2to1)) )';
                     legendStrs = {'merged-filtered-resampled','raw 2to1'};
-                else
-                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_2to1(1),T_1to2(1))) )';
+                else % T_2to1 is empty
+                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_1to2)) )';
                     legendStrs = {'merged-filtered-resampled','raw 1to2'};
                 end
                 % PLOT FOCUS IDS RSSI IF ANY
@@ -444,12 +444,12 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
                     t_w = T_W;
                     links = [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)];
                 else
-                    if ((t_w(1) - winc) >= T_W(1)) || (T_W(end) > (t_w(end) )) %%the T_W values are not contained within t_w
-                        if (t_w(1) - winc) >= T_W(1) %%the current T_2to1_W array starts before t_2to1 array
+                    if ((min(t_w) - winc) >= min(T_W)) || (max(T_W) > (max(t_w) )) %%the T_W values are not contained within t_w
+                        if (min(t_w) - winc) >= min(T_W) %%the current T_2to1_W array starts before t_2to1 array
                             % CREATE THE MISSING TIME VALUES
-                            t_temp = t_w(1):-winc:T_W(1);
+                            t_temp = (min(t_w):-winc:min(T_W))';
                             % APPEND THEM TO THE OLD t_w
-                            t_w = cat(1,t_temp',t_w);
+                            t_w = cat(1,t_temp,t_w);
                             
                             % CREATE MISSING graphEdeges_RSSI SAMPLES
                             graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
@@ -465,11 +465,11 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
                             graphEdeges_RSSI = graphEdeges_RSSI_temp;
                         end
                         
-                        if T_W(end) > (t_w(end) ) %%the current T_2to1_W array finishes after t_2to1 array
+                        if max(T_W) > (max(t_w) ) %%the current T_2to1_W array finishes after t_2to1 array
                             % CREATE THE MISSING TIME VALUES
-                            t_temp = t_w(end):winc:T_W(end);
+                            t_temp = (max(t_w):winc:max(T_W))';
                             % APPEND THEM TO THE OLD t_w
-                            t_w = cat(1,t_w,t_temp');
+                            t_w = cat(1,t_w,t_temp);
                             
                             % CREATE MISSING graphEdeges_RSSI SAMPLES
                             graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
@@ -482,7 +482,7 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
                         % CREATE MISSING graphEdeges_RSSI SAMPLES
                         graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
                         graphEdeges_RSSI_temp(1:end,1:end-1) = graphEdeges_RSSI;
-                        tmp = abs(t_w-T_W(1));
+                        tmp = abs(t_w-min(T_W));
                         [ ~ , startingindex] = min(tmp);
                         graphEdeges_RSSI_temp(startingindex:startingindex+length(RSSI_Signal_W)-1,end) = RSSI_Signal_W;
                         % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
