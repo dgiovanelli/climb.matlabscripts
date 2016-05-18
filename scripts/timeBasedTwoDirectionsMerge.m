@@ -6,19 +6,19 @@ if isempty( t1 ) || isempty( t2 )
         return
     else
         if isempty( t1 )
-            ts =  t2(1);
+            ts =  min(t2);
             output = double.empty;
             actT = ts;
-            while(actT < t2(end) )
+            while(actT < max(t2) )
                 %mean of the signal2, since signal1 is empty
                 output = cat(1, output, mean2( signal2( t2<actT+wsize & t2>actT )));
                 actT = actT + winc;
             end
         else %t2 is empty
-            ts =  t1(1);
+            ts =  min(t1);
             output = double.empty;
             actT = ts;
-            while(actT < t1(end) )
+            while(actT < max(t1) )
                 %mean of the signal2, since signal1 is empty
                 output = cat(1, output, mean2( signal1( t1<actT+wsize & t1>actT )));
                 actT = actT + winc;
@@ -26,10 +26,10 @@ if isempty( t1 ) || isempty( t2 )
         end
     end
 else
-    ts = min(t1(1), t2(1));
+    ts = min([t1', t2']);
     output = double.empty;
     actT = ts;
-    while(actT < max( t1(end), t2(end) ))
+    while(actT < max( [t1', t2'] ))
         %mean of the two signals
         output = cat(1, output, mean2( [signal1( t1<actT+wsize & t1>actT )',signal2( t2<actT+wsize & t2>actT )' ] ));
         
