@@ -600,9 +600,9 @@ str = [];
 for timeIndexNo = xstart_index : xstop_index
     CENTERING_OFFSET_XY = [0,0];
     if timeIndexNo == xstart_index
-        createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links, LINKS_UNRELIABLITY(timeIndexNo,:) , '../output/output_m_temp.dot',[]);
+        createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:) , '../output/output_m_temp.dot',[]); %1+LINKS_UNRELIABLITY(timeIndexNo,:) is because LINKS_UNRELIABLITY is zero if the link is reliable, inside createDOTdescriptionFile the spring constant is calculated with 1/LINKS_UNRELIABLITY(...). If LINKS_UNRELIABLITY(...) == 0 the constant will be Inf...
     else
-        createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links, LINKS_UNRELIABLITY(timeIndexNo,:) , '../output/output_m_temp.dot',nodePositionXY(:,:,nodePositionIndex-1));
+        createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:) , '../output/output_m_temp.dot',nodePositionXY(:,:,nodePositionIndex-1));
     end
     [status,cmdout] = dos('neato -Tplain ../output/output_m_temp.dot');
     if status == 0
