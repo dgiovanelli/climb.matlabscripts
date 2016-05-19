@@ -525,6 +525,45 @@ t_w = t_w - double(t_zero);
 % NOTE: graphEdeges_RSSI is already filtered with sliding window 
 graphEdeges_m = RSSI_to_m(graphEdeges_RSSI);
 
+%LINK RELIABILITY
+LINKS_UNRELIABLITY = zeros(size(graphEdeges_m));
+i_link_1 = 1;
+while i_link_1 < size(links,2) %scan all links and evaluate all possible 'triagles'.
+    % The algorithm simly takes into consideration that links are somehow ordered (if one appeared in the first row, it won't be found anymore in the second)
+    id_1 = links(1,i_link_1);
+    id_2 = links(2,i_link_1);
+    id_3 = links(2,i_link_1+1);
+    
+    i_links_2_temp = find(links(1,:)'==id_2); 
+    i_link_2 = i_links_2_temp(1);
+    
+    i_link_3 = i_link_1 + 1; %this is valid because of links matrix construction.
+    
+    for timeIndexNo = 1:size(graphEdeges_m,1)
+        if graphEdeges_m(timeIndexNo,i_link_1)~=Inf && graphEdeges_m(timeIndexNo,i_link_2)~=Inf && graphEdeges_m(timeIndexNo,i_link_3)~=Inf
+            if graphEdeges_m(timeIndexNo,i_link_1) + graphEdeges_m(timeIndexNo,i_link_2) <  graphEdeges_m(timeIndexNo,i_link_3)
+                %links(i_link_3) -> unreliable
+                LINKS_UNRELIABLITY(timeIndexNo,i_link_3) = LINKS_UNRELIABLITY(timeIndexNo,i_link_3) + 1;
+            end
+            if graphEdeges_m(timeIndexNo,i_link_2) + graphEdeges_m(timeIndexNo,i_link_3) <  graphEdeges_m(timeIndexNo,i_link_1)
+                %links(i_link_1) -> unreliable
+                LINKS_UNRELIABLITY(timeIndexNo,i_link_1) = LINKS_UNRELIABLITY(timeIndexNo,i_link_1) + 1;
+            end
+            if graphEdeges_m(timeIndexNo,i_link_3) + graphEdeges_m(timeIndexNo,i_link_1) <  graphEdeges_m(timeIndexNo,i_link_2)
+                %links(i_link_2) -> unreliable
+                LINKS_UNRELIABLITY(timeIndexNo,i_link_2) = LINKS_UNRELIABLITY(timeIndexNo,i_link_2) + 1;
+            end
+        end
+    end
+    
+    i_links_1_temp = find(links(1,:)'==id_1);
+    if i_link_1 == i_links_1_temp(end-1)
+        i_link_1 = i_link_1 + 2;
+    else
+        i_link_1 = i_link_1 + 1;
+    end
+end
+
 figure(200)
 plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m);
 xlabel('Time [s]');
@@ -561,9 +600,9 @@ str = [];
 for timeIndexNo = xstart_index : xstop_index
     CENTERING_OFFSET_XY = [0,0];
     if timeIndexNo == xstart_index
-        createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links , '../output/output_m_temp.dot',[]);
+        createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links, LINKS_UNRELIABLITY(timeIndexNo,:) , '../output/output_m_temp.dot',[]);
     else
-        createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links , '../output/output_m_temp.dot',nodePositionXY(:,:,nodePositionIndex-1));
+        createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links, LINKS_UNRELIABLITY(timeIndexNo,:) , '../output/output_m_temp.dot',nodePositionXY(:,:,nodePositionIndex-1));
     end
     [status,cmdout] = dos('neato -Tplain ../output/output_m_temp.dot');
     if status == 0
