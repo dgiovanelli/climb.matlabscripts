@@ -199,7 +199,7 @@ for lineNo = 1:1:length(GATT_DATA.TIMESTAMP.TIME_TICKS)
     %if strcmp(GATT_DATA.SOURCE.NAME{lineNo},'CLIMBM'); %ONLY MASTER GATT DATA IS ANALYZED HERE
         if ~isempty(GATT_DATA.DATA{lineNo})
             MASTER_ID = 254; %%254 is fixed for master ID
-            %if sum(IDs_TO_CONSIDER == RECEIVER_ID) >= 1 || isempty(IDs_TO_CONSIDER); %CHECK IF THE ID BELONGS TO IDs_TO_CONSIDER LIST (IF THAT LIST IS EMPTY ALL IDS HAVE TO BE CONSIDERED VALID)
+            if sum(IDs_TO_CONSIDER == MASTER_ID) >= 1 || isempty(IDs_TO_CONSIDER); %CHECK IF THE ID BELONGS TO IDs_TO_CONSIDER LIST (IF THAT LIST IS EMPTY ALL IDS HAVE TO BE CONSIDERED VALID)
                 i = findNodeIndex(RSSI_MATRIX, MASTER_ID ); %TRY TO FIND ID POSITION INSIDE RSSI_MATRIX
                 if i > size(RSSI_MATRIX,1) %IF THIS CONDITION IS TRUE IT MEANS THAT THE RSSI_MATRIX IS TOO SMALL TO STORE ALL IDS' DATA
                     RSSI_MATRIX = addIDtoMatrix(RSSI_MATRIX,MASTER_ID);  %THIS RESIZES RSSI_MATRIX ADDING ONE LINE AND ONE COLUMN
@@ -231,7 +231,7 @@ for lineNo = 1:1:length(GATT_DATA.TIMESTAMP.TIME_TICKS)
                     end
                 end
                 timeSampleNo = timeSampleNo + 1 ;
-            %end
+            end
         end
     %end
     %PLOT PROGRESS PERCENT DATA
