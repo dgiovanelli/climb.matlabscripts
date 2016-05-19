@@ -1,9 +1,13 @@
-function createDOTdescriptionFile( SIGNAL, links, filename, nodeStartPositionXY)
-    
+function createDOTdescriptionFile( SIGNAL, links, k_factor ,filename, nodeStartPositionXY)
+
+if size(k_factor,2) ~= size(links,2) %is k_factor is wrong size, fix all spring constant to 1
+    k_factor = ones(1,size(links,2));
+end
+
 fileID = fopen(filename,'w');
 %HEADER
 fprintf(fileID,'graph G {\n');
-stop = 0;
+
 %START POSITION
 for index = 1:length(nodeStartPositionXY)
     if sum(nodeStartPositionXY(index,1) == links(:)) ~= 0 % the node with ID nodeStartPositionXY(index,1) is present then set its initial condition
@@ -22,7 +26,7 @@ for index = 1:1:size(links,2)
         if SIGNAL(index) < 0
             SIGNAL(index) = 0.1;
         end
-        fprintf(fileID,'%d -- %d[len="%.2f", weight="1"];\n',links(1,index),links(2,index),SIGNAL(index));
+        fprintf(fileID,'%d -- %d[len="%.2f", weight="%.4f"];\n',links(1,index),links(2,index),SIGNAL(index),1/k_factor(index));
     end
 end
 
