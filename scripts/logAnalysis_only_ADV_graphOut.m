@@ -18,6 +18,7 @@ SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plot
 CENTER_ON_MASTER = 1; %if this is set to 1 the layout is plot centered on master node
 PLOT_NODE_LABELS = 0; %setting this to 1 node labels are removed from plot, and the master node is plotted in red
 wsize_sec = 15;
+CENTER_ON_ID = 161; %the plot will be centered on this node. Set to zero to free layouts
 winc_sec = 1;
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_11.11.3.txt';
@@ -551,14 +552,14 @@ tmp = abs(t_w - xstop);
  
 % xstart_index = 1;
 % xstop_index = length(graphEdeges_m)-1;
-
+%% CALCULATING NODES LAYOUT
 fprintf('CALCULATING LAYOUT:\n');
 nodePositionXY = zeros(length(AVAILABLE_IDs),3,xstop_index-xstart_index);
 nodePositionIndex = 1;
 nextPercentPlotIndex = xstart_index;
 str = [];
 for timeIndexNo = xstart_index : xstop_index
-    MASTER_OFFSET_XY = [0,0];
+    CENTERING_OFFSET_XY = [0,0];
     if timeIndexNo == xstart_index
         createDOTdescriptionFile( graphEdeges_m(timeIndexNo,:), links , '../output/output_m_temp.dot',[]);
     else
@@ -573,23 +574,23 @@ for timeIndexNo = xstart_index : xstop_index
             if( tLine(1) == 'n' && tLine(2) == 'o' && tLine(3) == 'd' && tLine(4) == 'e')
                 k = findNodeIndex(RSSI_MATRIX(:,:,1), tLine(5) );
                 nodePositionXY(k-1,:,nodePositionIndex) = tLine(5:7)';
-                if tLine(5) == 254 %NB: 254 is used for master (regardless its mac)
-                    k_master = k;
-                    if CENTER_ON_MASTER == 1
-                        MASTER_OFFSET_XY = nodePositionXY(k-1,2:3,nodePositionIndex);
-                        nodePositionXY(k-1,:,nodePositionIndex) = tLine(5:7)';
+                if tLine(5) == CENTER_ON_ID
+                    k_center_id = k;
+                    if CENTER_ON_ID ~= 0
+                        CENTERING_OFFSET_XY = nodePositionXY(k_center_id-1,2:3,nodePositionIndex);
                     end
                 end
             end
         end
         
-        if CENTER_ON_MASTER == 1 && sum(MASTER_OFFSET_XY) ~= 0
+        if CENTER_ON_ID ~= 0 && sum(CENTERING_OFFSET_XY) ~= 0
             for i_id = 1:size(nodePositionXY,1)
                 if nodePositionXY(i_id,1,nodePositionIndex) ~= 0
-                    nodePositionXY(i_id,2:3,nodePositionIndex) = nodePositionXY(i_id,2:3,nodePositionIndex) - nodePositionXY(k_master-1,2:3,nodePositionIndex);
+                    nodePositionXY(i_id,2:3,nodePositionIndex) = nodePositionXY(i_id,2:3,nodePositionIndex) - CENTERING_OFFSET_XY;
                 end
             end
         end
+        
         nodePositionIndex = nodePositionIndex + 1;
         
     end
