@@ -26,7 +26,7 @@ for index = 1:1:size(links,2)
         if SIGNAL(index) < 0
             SIGNAL(index) = 0.1;
         end
-        fprintf(fileID,'%d -- %d[len="%.2f", weight="%.4f"];\n',links(1,index),links(2,index),SIGNAL(index),1/k_factor(index));
+        fprintf(fileID,'%d -- %d[len="%.2f", weight="%.3f"];\n',links(1,index),links(2,index),SIGNAL(index),1/k_factor(index));
     end
 end
 
