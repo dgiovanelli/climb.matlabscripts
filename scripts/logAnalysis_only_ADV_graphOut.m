@@ -527,41 +527,34 @@ graphEdeges_m = RSSI_to_m(graphEdeges_RSSI);
 
 %LINK RELIABILITY
 LINKS_UNRELIABLITY = zeros(size(graphEdeges_m));
-i_link_1 = 1;
-while i_link_1 < size(links,2) %scan all links and evaluate all possible 'triagles'.
-    % The algorithm simly takes into consideration that links are somehow ordered (if one appeared in the first row, it won't be found anymore in the second)
+for i_link_1=1:size(graphEdeges_m,2) %scan all links and evaluate all possible 'triangles'.
+    
     id_1 = links(1,i_link_1);
-    id_2 = links(2,i_link_1);
-    id_3 = links(2,i_link_1+1);
-    
-    i_links_2_temp = find(links(1,:)'==id_2); 
-    i_link_2 = i_links_2_temp(1);
-    
-    i_link_3 = i_link_1 + 1; %this is valid because of links matrix construction.
-    
-    for timeIndexNo = 1:size(graphEdeges_m,1)
-        if graphEdeges_m(timeIndexNo,i_link_1)~=Inf && graphEdeges_m(timeIndexNo,i_link_2)~=Inf && graphEdeges_m(timeIndexNo,i_link_3)~=Inf
-            if graphEdeges_m(timeIndexNo,i_link_1) + graphEdeges_m(timeIndexNo,i_link_2) <  graphEdeges_m(timeIndexNo,i_link_3)
-                %links(i_link_3) -> unreliable
-                LINKS_UNRELIABLITY(timeIndexNo,i_link_3) = LINKS_UNRELIABLITY(timeIndexNo,i_link_3) + 1;
-            end
-            if graphEdeges_m(timeIndexNo,i_link_2) + graphEdeges_m(timeIndexNo,i_link_3) <  graphEdeges_m(timeIndexNo,i_link_1)
-                %links(i_link_1) -> unreliable
-                LINKS_UNRELIABLITY(timeIndexNo,i_link_1) = LINKS_UNRELIABLITY(timeIndexNo,i_link_1) + 1;
-            end
-            if graphEdeges_m(timeIndexNo,i_link_3) + graphEdeges_m(timeIndexNo,i_link_1) <  graphEdeges_m(timeIndexNo,i_link_2)
-                %links(i_link_2) -> unreliable
-                LINKS_UNRELIABLITY(timeIndexNo,i_link_2) = LINKS_UNRELIABLITY(timeIndexNo,i_link_2) + 1;
+    id_2_temp = links(2,links(1,:)==id_1);
+    id_2 = id_2_temp(1);
+    i_links_2_temp = find(links(1,:)==id_2);
+    for i_link_2=i_links_2_temp
+        id_3 = links(2,i_link_2);
+        i_link_3 = find(links(2,:)==id_3 & links(1,:)==id_1);
+        
+        for timeIndexNo = 1:size(graphEdeges_m,1)
+            if graphEdeges_m(timeIndexNo,i_link_1)~=Inf && graphEdeges_m(timeIndexNo,i_link_2)~=Inf && graphEdeges_m(timeIndexNo,i_link_3)~=Inf
+                if graphEdeges_m(timeIndexNo,i_link_1) + graphEdeges_m(timeIndexNo,i_link_2) <  0.8*graphEdeges_m(timeIndexNo,i_link_3)
+                    %links(i_link_3) -> unreliable
+                    LINKS_UNRELIABLITY(timeIndexNo,i_link_3) = LINKS_UNRELIABLITY(timeIndexNo,i_link_3) + 1;
+                end
+                if graphEdeges_m(timeIndexNo,i_link_2) + graphEdeges_m(timeIndexNo,i_link_3) <  0.8*graphEdeges_m(timeIndexNo,i_link_1)
+                    %links(i_link_1) -> unreliable
+                    LINKS_UNRELIABLITY(timeIndexNo,i_link_1) = LINKS_UNRELIABLITY(timeIndexNo,i_link_1) + 1;
+                end
+                if graphEdeges_m(timeIndexNo,i_link_3) + graphEdeges_m(timeIndexNo,i_link_1) <  graphEdeges_m(timeIndexNo,i_link_2)
+                    %links(i_link_2) -> unreliable
+                    LINKS_UNRELIABLITY(timeIndexNo,i_link_2) = LINKS_UNRELIABLITY(timeIndexNo,i_link_2) + 1;
+                end
             end
         end
     end
-    
-    i_links_1_temp = find(links(1,:)'==id_1);
-    if i_link_1 == i_links_1_temp(end-1)
-        i_link_1 = i_link_1 + 2;
-    else
-        i_link_1 = i_link_1 + 1;
-    end
+end
 
 %FILTERING: TO CHECK
 if F_filt ~= 0
