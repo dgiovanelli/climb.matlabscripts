@@ -562,6 +562,16 @@ while i_link_1 < size(links,2) %scan all links and evaluate all possible 'triagl
     else
         i_link_1 = i_link_1 + 1;
     end
+
+%FILTERING: TO CHECK
+if F_filt ~= 0
+    fs = 1/(2*winc_sec);
+    [b,a] = butter(n_filt,F_filt / fs,'low');  %create filter
+    graphEdeges_m(graphEdeges_m==Inf) = 400; %This sets the maximum edge length (used for filtering) to 400 meters, if this is removed the filter output could be NaN. To see this simply remove this line and look the differences between graphEdeges_m_filt and graphEdeges_m
+    graphEdeges_m_filt = filter(b,a,graphEdeges_m); %apply the filter
+    graphEdeges_m_filt(graphEdeges_m==Inf) = Inf; %Restore Infs to avoid introducing errors due to edge length underestimation
+  else
+    graphEdeges_m_filt = graphEdeges_m;
 end
 
 figure(200)
