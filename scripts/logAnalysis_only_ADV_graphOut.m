@@ -575,7 +575,7 @@ if F_filt ~= 0
 end
 
 figure(200)
-plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m);
+plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m_filt,  t_w*TICK_DURATION, graphEdeges_m );
 xlabel('Time [s]');
 ylabel('distance [m]');
 legend('TAGs','distance');
