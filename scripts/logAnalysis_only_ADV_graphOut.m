@@ -678,7 +678,7 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
             nodesOutsideSquare = nodesOutsideSquare + 1;
         end
     end
-    str = sprintf('Time = %.0f\n %d nodes inside the sqare\n %d nodes outside   the square',xstart_index+timeIndexNo*winc_sec,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
+    str = sprintf('Time = %.0f\n %d nodes inside the sqare\n %d nodes outside the square',(xstart_index+timeIndexNo)*winc_sec,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
     text(-squareDim+squareDim*0.1,squareDim-squareDim*0.2,str,'FontSize',10,'FontWeight','bold');
     axis([-squareDim squareDim -squareDim squareDim]);
     
