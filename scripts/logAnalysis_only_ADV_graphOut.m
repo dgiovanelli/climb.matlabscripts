@@ -553,7 +553,20 @@ for edgeNo=1:size(graphEdeges_m,2)
 end
 fprintf('Done!\n\n');
 
+%FILTERING: TO CHECK, RECREATE SAMPLES IF MISSING, IT IS WRONG TO SET IT TO
+%250 METERS
+if F_filt ~= 0
+    fs = 1/(2*winc_sec);
+    [b,a] = butter(n_filt,F_filt / fs,'low');  %create filter
+    graphEdeges_m(graphEdeges_m == Inf) = 300; %This sets the maximum edge length (used for filtering) to 400 meters, if this is removed the filter output could be NaN. To see this simply remove this line and look the differences between graphEdeges_m_filt and graphEdeges_m
+    graphEdeges_m_filt = filter(b,a,graphEdeges_m); %apply the filter
+    graphEdeges_m_filt(graphEdeges_m == Inf) = Inf; %Restore Infs to avoid introducing errors due to edge length underestimation
+else
+    graphEdeges_m_filt = graphEdeges_m;
+end
+
 %LINK RELIABILITY
+fprintf('LINKS RELIABILITY CHECK:\n');
 LINKS_UNRELIABLITY = zeros(size(graphEdeges_m));
 for i_link_1=1:size(graphEdeges_m,2) %scan all links and evaluate all possible 'triangles'.
     
@@ -583,18 +596,7 @@ for i_link_1=1:size(graphEdeges_m,2) %scan all links and evaluate all possible '
         end
     end
 end
-
-%FILTERING: TO CHECK, RECREATE SAMPLES IF MISSING, IT IS WRONG TO SET IT TO
-%250 METERS
-if F_filt ~= 0
-    fs = 1/(2*winc_sec);
-    [b,a] = butter(n_filt,F_filt / fs,'low');  %create filter
-    graphEdeges_m(graphEdeges_m == Inf) = 300; %This sets the maximum edge length (used for filtering) to 400 meters, if this is removed the filter output could be NaN. To see this simply remove this line and look the differences between graphEdeges_m_filt and graphEdeges_m
-    graphEdeges_m_filt = filter(b,a,graphEdeges_m); %apply the filter
-    graphEdeges_m_filt(graphEdeges_m == Inf) = Inf; %Restore Infs to avoid introducing errors due to edge length underestimation
-else
-    graphEdeges_m_filt = graphEdeges_m;
-end
+fprintf('Done!\n\n');
 
 figure(200)
 plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m_filt,  t_w*TICK_DURATION, graphEdeges_m );
