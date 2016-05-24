@@ -626,6 +626,13 @@ tmp = abs(t_w - xstop);
 % xstart_index = 1;
 % xstop_index = length(graphEdeges_m)-1;
 %% CALCULATING NODES LAYOUT
+% NOTE: for now, changing the spring constant has no evident effect on
+% layout. Moreover neato fail to layouts a matematical straigt line such as:
+% graph G{
+% 1 -- 2[len="1",weight="1";
+% 2 -- 3[len="1",weight="1";
+% 1 -- 3[len="2",weight="1";
+% }
 fprintf('CALCULATING LAYOUT:\n');
 nodePositionXY = zeros(length(AVAILABLE_IDs),3,xstop_index-xstart_index);
 nodePositionIndex = 1;
