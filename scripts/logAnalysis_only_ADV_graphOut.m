@@ -1,10 +1,10 @@
 clear all;
 close all;
-clc;
+%clc;
 
-FOCUS_ID_1 = 9;
-FOCUS_ID_2 = 254;
-IDs_TO_CONSIDER = []; % set this to empty to select all IDs
+FOCUS_ID_1 = 161;
+FOCUS_ID_2 = 167;
+IDs_TO_CONSIDER = [161, 162, 163, 164, 165, 166, 167];%161:1:167; % set this to empty to select all IDs
 %IDs_TO_CONSIDER = [2,3,4,9,11];
 %IDs_TO_CONSIDER = [6, 3, 129, 2, 4, 1];
 %IDs_TO_CONSIDER = [ 48, 50,  52,  72, 70, 51, 53,  58, 54, 57, 62, 61, 60, 56, 55, 75, 67, 65, 64, 68, 66, 49 ];
@@ -16,13 +16,16 @@ end
 ANDROID = 1; %set this to 1 if the log has been performed with the android app
 SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plotted (and the packet counter info are discarded)
 CENTER_ON_MASTER = 1; %if this is set to 1 the layout is plot centered on master node
-PLOT_NODE_LABELS = 0; %setting this to 1 node labels are removed from plot, and the master node is plotted in red
-wsize_sec = 15;
+PLOT_NODE_LABELS = 1; %setting this to 1 node labels are removed from plot, and the master node is plotted in red
 CENTER_ON_ID = 161; %the plot will be centered on this node. Set to zero to free layouts
-winc_sec = 1;
+wsize_sec = 7;
+winc_sec = 0.2;
+F_filt = 0.5; %filter cut off frequency [Hz]. Set this to 0 to disable filtering
+n_filt = 2;
+
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_11.11.3.txt';
-filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEMP/5187f1cf-a6f0-4e4a-a025-cb2fe52a1061_log_138_7.33.51.txt';
+filename = 'D:/Drive/CLIMB/WIRELESS/LOG/LOCALIZATION/LOGS/log_139_18.55.27.txt';
 
 delimiter = ' ';
 CHECK_FOR_NOT_INCREMENTED_COUNTER = 1;
@@ -694,9 +697,9 @@ fprintf('Done!\n\n');
 %% PLOTTING AND EXPORTING NODES LAYOUT
 figure(205)
 filename = '../output/output_Animation.gif';
-fps = 1/winc_sec*10;
+fps = 1/winc_sec*5;
 colorlist2 = hsv( size(nodePositionXY,1) );
-squareDim = 100;
+squareDim = 50;
 for timeIndexNo = 1 : size(nodePositionXY,3)
     nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
     nodesOutsideSquare = 0;
