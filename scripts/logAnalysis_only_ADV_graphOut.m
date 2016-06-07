@@ -15,7 +15,6 @@ else
 end
 ANDROID = 1; %set this to 1 if the log has been performed with the android app
 SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plotted (and the packet counter info are discarded)
-CENTER_ON_MASTER = 1; %if this is set to 1 the layout is plot centered on master node
 PLOT_NODE_LABELS = 1; %setting this to 1 node labels are removed from plot, and the master node is plotted in red
 CENTER_ON_ID = 161; %the plot will be centered on this node. Set to zero to free layouts
 USE_MDS = 1; %when USE_MDS is non zero the scripts uses neato to place nodes, otherwise it uses Multidimensional Scaling
