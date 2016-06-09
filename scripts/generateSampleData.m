@@ -76,8 +76,6 @@ end
 LINKS_UNRELIABLITY = zeros(size(t,2),size(links,2));
 AVAILABLE_IDs = nodePositionXY_GroundTh(:,1,1);
 
-noise = rand(size(graphEdeges_m_filt)) * NOISE_AMPL - NOISE_AMPL/2;
-graphEdeges_m_filt = graphEdeges_m_filt + noise;
 %% PLAYBACK THE GENERATED DATA
 figure(2)
 filename = '../output/fakeData.gif';
