@@ -22,11 +22,15 @@ figure(1)
 plot(fixedNodesPositionXY(1,2), fixedNodesPositionXY(1,3),'o')
 axis([-50, 50, -50, 50]);
 grid on;
+
+fprintf('Fixed node with ID:%d inserted in pos (0,0)\n',firstNodeId);
+fprintf('Insert new nodes by clicking on image (right click to stop)\n');
 button = 1;
 fixedNodeNo = 2; %NB: the firs node is automatically inserted at pos (0,0)
 while button == 1
     [x,y,button] = ginput(1);
     if button == 1
+        fprintf('Node with ID:%d inserted in pos (%.2f,%.2f)!\n',firstNodeId+fixedNodeNo-1, x,y);
         fixedNodesPositionXY = [fixedNodesPositionXY(1:fixedNodeNo-1,:);[firstNodeId+fixedNodeNo-1 , x , y]];
         plot(fixedNodesPositionXY(1:fixedNodeNo,2), fixedNodesPositionXY(1:fixedNodeNo,3),'o');
         axis([-50, 50, -50, 50]);
@@ -34,31 +38,36 @@ while button == 1
         fixedNodeNo = fixedNodeNo+1;
     end
 end
-
+fprintf('Fixed nodes inserted!\n\n');
 %% GENERATE SAMPLE DATA FOR MOVING NODES (only linear trajectories are alowed)
 movingNodePositionXY = zeros(1,3,size(t,2));
 movingNodeNo = 1;
 button = 1;
+fprintf('Insert new moving nodes by clicking on image, only linear trajectories are alowed (right click to stop)\n');
 while button == 1
+    fprintf('Select start point (right click to stop)...\n');
     [x,y,button] = ginput(1);
     if button == 1 %continue
         start_XY = [x,y];
+        fprintf('Select stop point (right click to stop)...\n');
         [x,y,button] = ginput(1);
-        stop_XY = [x,y];
-        
-        len_XY = stop_XY - start_XY;
-        speed_XY = len_XY./duration_s;
-        
-        for timeNo = 1:size(t,2)
-            movingNodePositionXY(movingNodeNo,:,timeNo) = [firstNodeId+fixedNodeNo-2+movingNodeNo, start_XY+speed_XY.*timeNo.*Ts];
+        if button == 1 %continue
+            fprintf('Node with ID:%d inserted!\n',firstNodeId+fixedNodeNo-2+movingNodeNo);
+            
+            stop_XY = [x,y];
+            
+            len_XY = stop_XY - start_XY;
+            speed_XY = len_XY./duration_s;
+            
+            for timeNo = 1:size(t,2)
+                movingNodePositionXY(movingNodeNo,:,timeNo) = [firstNodeId+fixedNodeNo-2+movingNodeNo, start_XY+speed_XY.*timeNo.*Ts];
+            end
+            movingNodeNo = movingNodeNo + 1;
         end
-        movingNodeNo = movingNodeNo + 1;
-    else %a stop condition has been found
-        
     end
 end
-
-nodePositionXY_generated = zeros(fixedNodeNo-1+movingNodeNo-1,3,size(t,2));
+fprintf('Moving nodes inserted!\n\n');
+nodePositionXY_GroundTh = zeros(fixedNodeNo-1+movingNodeNo-1,3,size(t,2));
 for timeNo = 1:size(t,2)
     if movingNodeNo ~= 1
         nodePositionXY_generated(:,:,timeNo) = [fixedNodesPositionXY ; movingNodePositionXY(:,:,timeNo)];
