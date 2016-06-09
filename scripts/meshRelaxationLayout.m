@@ -1,36 +1,44 @@
 function nodePositionXY = meshRelaxationLayout(edegesLength, links, unreliablility ,startingPos)
 
-epsilon = 0.0000000000001;
+epsilon = 10;
+MAX_ITER = 0;
+iteractions = 0;
 
-%create a distance matrix starting from graphEdeges_m_filt and links
 nodesList = unique( links );
 nodesAmount = size(nodesList,1);
 
 distanceMatrix = zeros(nodesAmount);
-k_springs = ones(nodesAmount)*10;
+k_springs = ones(nodesAmount);
 dEdx = zeros(nodesAmount);
 dEdy = zeros(nodesAmount);
 Dm = zeros(nodesAmount,1);
 if isempty(startingPos)
     nodePositionXY = rand(nodesAmount,2)*2-1;
+    r = 100*max(edegesLength);
+    deltaPhi_rad = (2*pi)/nodesAmount;
+    for nodeNo = 1:nodesAmount
+        nodePositionXY(nodeNo,:) = [r*sin(deltaPhi_rad*nodeNo), r*cos(deltaPhi_rad*nodeNo)];
+    end
 else
     nodePositionXY = startingPos;
 end
 Dm_max_value = Inf;
 
-for linkNo = 1 : size(links,1)
-    pos1 = find(nodesList == links(linkNo,1));
-    pos2 = find(nodesList == links(linkNo,2));
+for linkNo = 1 : size(links,2)
+    pos1 = find(nodesList == links(1,linkNo));
+    pos2 = find(nodesList == links(2,linkNo));
     
     distanceMatrix(pos1, pos2) = edegesLength(linkNo);
     distanceMatrix(pos2, pos1) = edegesLength(linkNo);
     
-    %k_springs(pos1, pos2) = 1/edegesLength(linkNo).^2;
-    %k_springs(pos2, pos1) = 1/edegesLength(linkNo).^2;
+%     k_springs(pos1, pos2) = 1/edegesLength(linkNo).^2;
+%     k_springs(pos2, pos1) = 1/edegesLength(linkNo).^2;
+    
+    k_springs(pos1, pos2) = 0.1/unreliablility(linkNo);
+    k_springs(pos2, pos1) = 0.1/unreliablility(linkNo);
 end
 
-while Dm_max_value > epsilon
-   
+while Dm_max_value > epsilon && iteractions < MAX_ITER
     for nodeNo_m = 1:nodesAmount
         for nodeNo_i = 1:nodesAmount
             
@@ -80,6 +88,10 @@ while Dm_max_value > epsilon
     
     nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [dx,dy];
 
+    iteractions = iteractions + 1; 
+end
+if iteractions >= MAX_ITER
+    warning('Loop stopped, MAX_ITER reached!');
 end
 
 
