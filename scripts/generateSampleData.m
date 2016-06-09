@@ -1,23 +1,8 @@
-close all;
-clear all;
-
-%% INITIALIZATION
-FOCUS_ID_1 = 0;
-FOCUS_ID_2 = 0;
-PLOT_NODE_LABELS = 1;
-LAYOUT_ALGORITHM = 0;
-CENTER_ON_ID = 100;
-NOISE_AMPL = 1;
-
-amountOfMovingNodes = 2;
-firstNodeId = 100;
-duration_s = 10;
-Ts = 0.2;
-t = 0:Ts:duration_s;
-%fixedNodesPositionXY = zeros(amountOfFixedNodes,3);
-fixedNodesPositionXY(1,:) = [firstNodeId, 0, 0];
-
 %% GENERATE SAMPLE DATA FOR FIXED NODES
+button = 1;
+fixedNodeNo = 2; %NB: the firs node is automatically inserted at pos (0,0)
+
+fixedNodesPositionXY(1,:) = [firstNodeId, 0, 0];
 figure(1)
 plot(fixedNodesPositionXY(1,2), fixedNodesPositionXY(1,3),'o')
 axis([-50, 50, -50, 50]);
@@ -25,8 +10,6 @@ grid on;
 
 fprintf('Fixed node with ID:%d inserted in pos (0,0)\n',firstNodeId);
 fprintf('Insert new nodes by clicking on image (right click to stop)\n');
-button = 1;
-fixedNodeNo = 2; %NB: the firs node is automatically inserted at pos (0,0)
 while button == 1
     [x,y,button] = ginput(1);
     if button == 1
