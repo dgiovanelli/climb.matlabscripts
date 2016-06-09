@@ -70,38 +70,40 @@ fprintf('Moving nodes inserted!\n\n');
 nodePositionXY_GroundTh = zeros(fixedNodeNo-1+movingNodeNo-1,3,size(t,2));
 for timeNo = 1:size(t,2)
     if movingNodeNo ~= 1
-        nodePositionXY_generated(:,:,timeNo) = [fixedNodesPositionXY ; movingNodePositionXY(:,:,timeNo)];
+        nodePositionXY_GroundTh(:,:,timeNo) = [fixedNodesPositionXY ; movingNodePositionXY(:,:,timeNo)];
     else
-        nodePositionXY_generated(:,:,timeNo) = fixedNodesPositionXY;
+        nodePositionXY_GroundTh(:,:,timeNo) = fixedNodesPositionXY;
     end
 end
 
 %% CALCULATE LINKS  AND OTHERS VARIABLES NEEDED FOR THE LAYOUT
 links = [];
 graphEdeges_m_filt = [];
-for nodeNo_1 = 1:size(nodePositionXY_generated,1)-1
-    for nodeNo_2 = nodeNo_1+1:size(nodePositionXY_generated,1)
+for nodeNo_1 = 1:size(nodePositionXY_GroundTh,1)-1
+    for nodeNo_2 = nodeNo_1+1:size(nodePositionXY_GroundTh,1)
         graphEdeges_m_filt_link = [];
-        links = cat(2,links,[nodePositionXY_generated(nodeNo_1,1,1);nodePositionXY_generated(nodeNo_2,1,1)]);
-        for timeIndexNo = 1 : size(nodePositionXY_generated,3)
-            d = sqrt( (nodePositionXY_generated(nodeNo_2,2,timeIndexNo) - nodePositionXY_generated(nodeNo_1,2,timeIndexNo))^2 + (nodePositionXY_generated(nodeNo_2,3,timeIndexNo) - nodePositionXY_generated(nodeNo_1,3,timeIndexNo))^2 );
+        links = cat(2,links,[nodePositionXY_GroundTh(nodeNo_1,1,1);nodePositionXY_GroundTh(nodeNo_2,1,1)]);
+        for timeIndexNo = 1 : size(nodePositionXY_GroundTh,3)
+            d = sqrt( (nodePositionXY_GroundTh(nodeNo_2,2,timeIndexNo) - nodePositionXY_GroundTh(nodeNo_1,2,timeIndexNo))^2 + (nodePositionXY_GroundTh(nodeNo_2,3,timeIndexNo) - nodePositionXY_GroundTh(nodeNo_1,3,timeIndexNo))^2 );
             graphEdeges_m_filt_link = cat(1,graphEdeges_m_filt_link,d);
         end
         graphEdeges_m_filt =  cat(2,graphEdeges_m_filt,graphEdeges_m_filt_link);
     end
 end
 LINKS_UNRELIABLITY = zeros(size(t,2),size(links,2));
-AVAILABLE_IDs = nodePositionXY_generated(:,1,1);
+AVAILABLE_IDs = nodePositionXY_GroundTh(:,1,1);
+
 noise = rand(size(graphEdeges_m_filt)) * NOISE_AMPL - NOISE_AMPL/2;
 graphEdeges_m_filt = graphEdeges_m_filt + noise;
 %% PLAYBACK THE GENERATED DATA
 figure(2)
 filename = '../output/fakeData.gif';
 fps = 1/Ts*5;
-colorlist2 = hsv( size(nodePositionXY_generated,1) );
+colorlist2 = hsv( size(nodePositionXY_GroundTh,1) );
 squareDim = 50;
-for timeIndexNo = 1 : size(nodePositionXY_generated,3)
-    nodePositionXY_temp = nodePositionXY_generated(nodePositionXY_generated(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
+fprintf('Playback data!\n\n');
+for timeIndexNo = 1 : size(nodePositionXY_GroundTh,3)
+    nodePositionXY_temp = nodePositionXY_GroundTh(nodePositionXY_GroundTh(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
     nodesOutsideSquare = 0;
     regularNodesPositionXY_temp =  nodePositionXY_temp(nodePositionXY_temp(:,1)~=254 & nodePositionXY_temp(:,1)~=FOCUS_ID_1 & nodePositionXY_temp(:,1)~=FOCUS_ID_2,:);
     masterNodePositionXY_temp = nodePositionXY_temp(nodePositionXY_temp(:,1)==254,:);
