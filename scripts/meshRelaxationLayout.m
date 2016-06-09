@@ -8,7 +8,7 @@ nodesList = unique( links );
 nodesAmount = size(nodesList,1);
 
 distanceMatrix = zeros(nodesAmount);
-k_springs = ones(nodesAmount);
+k_springs = k_default*ones(nodesAmount);
 dEdx = zeros(nodesAmount);
 dEdy = zeros(nodesAmount);
 Dm = zeros(nodesAmount,1);
@@ -34,8 +34,8 @@ for linkNo = 1 : size(links,2)
 %     k_springs(pos1, pos2) = 1/edegesLength(linkNo).^2;
 %     k_springs(pos2, pos1) = 1/edegesLength(linkNo).^2;
     
-    k_springs(pos1, pos2) = 0.1/unreliablility(linkNo);
-    k_springs(pos2, pos1) = 0.1/unreliablility(linkNo);
+    k_springs(pos1, pos2) = k_springs(pos1, pos2)/unreliablility(linkNo);
+    k_springs(pos2, pos1) = k_springs(pos2, pos1)/unreliablility(linkNo);
 end
 
 while Dm_max_value > epsilon && iteractions < MAX_ITER
