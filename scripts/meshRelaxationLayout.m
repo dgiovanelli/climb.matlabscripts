@@ -94,6 +94,11 @@ if iteractions >= MAX_ITER
     warning('Loop stopped, MAX_ITER reached!');
 end
 
+opts = optimset('Algorithm','lm-line-search');
+distanceMatrix_an = @(x)springEnergyCost( x,distanceMatrix, k_springs );
+[nodePositionXY,fval] = fminunc(distanceMatrix_an,nodePositionXY,opts);
+
+%[nodePositionXY,fval] = fminunc(@springEnergyCost,nodePositionXY);
 
 nodePositionXY = [nodesList , nodePositionXY(:,1:2)];
 
