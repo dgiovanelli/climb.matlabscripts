@@ -1,30 +1,33 @@
 %% GENERATE SAMPLE DATA FOR FIXED NODES
 button = 1;
-fixedNodeNo = 2; %NB: the firs node is automatically inserted at pos (0,0)
+fixedNodeNo = 0; %NB: the firs node is automatically inserted at pos (0,0)
 
-fixedNodesPositionXY(1,:) = [firstNodeId, 0, 0];
+%fixedNodesPositionXY(1,:) = [firstNodeId, 0, 0];
 figure(1)
-plot(fixedNodesPositionXY(1,2), fixedNodesPositionXY(1,3),'o')
+%plot(fixedNodesPositionXY(1,2), fixedNodesPositionXY(1,3),'o')
+plot(1000,1000);
 axis([-50, 50, -50, 50]);
 grid on;
 
-fprintf('Fixed node with ID:%d inserted in pos (0,0)\n',firstNodeId);
 fprintf('Insert new nodes by clicking on image (right click to stop)\n');
 while button == 1
     [x,y,button] = ginput(1);
     if button == 1
-        fprintf('Node with ID:%d inserted in pos (%.2f,%.2f)!\n',firstNodeId+fixedNodeNo-1, x,y);
-        fixedNodesPositionXY = [fixedNodesPositionXY(1:fixedNodeNo-1,:);[firstNodeId+fixedNodeNo-1 , x , y]];
-        plot(fixedNodesPositionXY(1:fixedNodeNo,2), fixedNodesPositionXY(1:fixedNodeNo,3),'o');
+        fprintf('Node with ID:%d inserted in pos (%.2f,%.2f)!\n',firstNodeId+fixedNodeNo, x,y);
+        if fixedNodeNo == 0
+            fixedNodesPositionXY = [firstNodeId+fixedNodeNo , x , y];
+        else
+            fixedNodesPositionXY = [fixedNodesPositionXY(1:fixedNodeNo,:);[firstNodeId+fixedNodeNo , x , y]];
+        end
+        plot(fixedNodesPositionXY(1:fixedNodeNo+1,2), fixedNodesPositionXY(1:fixedNodeNo+1,3),'o');
         axis([-50, 50, -50, 50]);
         grid on;
         fixedNodeNo = fixedNodeNo+1;
     end
 end
-fprintf('Fixed nodes inserted!\n\n');
+fprintf('%d fixed nodes inserted!\n\n',fixedNodeNo);
 %% GENERATE SAMPLE DATA FOR MOVING NODES (only linear trajectories are alowed)
-movingNodePositionXY = zeros(1,3,size(t,2));
-movingNodeNo = 1;
+movingNodeNo = 0;
 button = 1;
 fprintf('Insert new moving nodes by clicking on image, only linear trajectories are alowed (right click to stop)\n');
 while button == 1
@@ -35,28 +38,55 @@ while button == 1
         fprintf('Select stop point (right click to stop)...\n');
         [x,y,button] = ginput(1);
         if button == 1 %continue
-            fprintf('Node with ID:%d inserted!\n',firstNodeId+fixedNodeNo-2+movingNodeNo);
+            fprintf('Node with ID:%d inserted!\n',firstNodeId+fixedNodeNo+movingNodeNo);
             
             stop_XY = [x,y];
             
             len_XY = stop_XY - start_XY;
             speed_XY = len_XY./duration_s;
             
+            if movingNodeNo == 0
+                movingNodePositionXY = zeros(1,3,size(t,2));
+            end
+            
             for timeNo = 1:size(t,2)
-                movingNodePositionXY(movingNodeNo,:,timeNo) = [firstNodeId+fixedNodeNo-2+movingNodeNo, start_XY+speed_XY.*timeNo.*Ts];
+                movingNodePositionXY(movingNodeNo+1,:,timeNo) = [firstNodeId+fixedNodeNo+movingNodeNo, start_XY+speed_XY.*timeNo.*Ts];
             end
             movingNodeNo = movingNodeNo + 1;
         end
     end
 end
+if movingNodeNo == 0 && fixedNodeNo == 0
+    error('No node inserted!!\n');
+end
+
 fprintf('Moving nodes inserted!\n\n');
-nodePositionXY_GroundTh = zeros(fixedNodeNo-1+movingNodeNo-1,3,size(t,2));
+nodePositionXY_GroundTh = zeros(fixedNodeNo+movingNodeNo,3,size(t,2));
 for timeNo = 1:size(t,2)
-    if movingNodeNo ~= 1
+    if movingNodeNo ~= 0 && fixedNodeNo ~= 0
         nodePositionXY_GroundTh(:,:,timeNo) = [fixedNodesPositionXY ; movingNodePositionXY(:,:,timeNo)];
-    else
+    elseif fixedNodeNo ~= 0
         nodePositionXY_GroundTh(:,:,timeNo) = fixedNodesPositionXY;
+    elseif movingNodeNo ~= 0
+        nodePositionXY_GroundTh(:,:,timeNo) = movingNodePositionXY(:,:,timeNo);
     end
+    
+    k_center_id = find(CENTER_ON_ID == nodePositionXY_GroundTh(:,1,timeNo));
+    
+    if CENTER_ON_ID ~= 0
+        if size(k_center_id) == 0
+            
+        elseif size(k_center_id) == 1
+            CENTERING_OFFSET_XY = nodePositionXY_GroundTh(k_center_id,2:3,timeNo);
+            nodePositionXY_GroundTh(:,2:3,timeNo) = nodePositionXY_GroundTh(:,2:3,timeNo) - [ones(size(nodePositionXY_GroundTh(:,2:3,timeNo),1),1) * CENTERING_OFFSET_XY(1), ones(size(nodePositionXY_GroundTh(:,2:3,timeNo),1),1) * CENTERING_OFFSET_XY(2)];
+        else
+            error('More than one (%d) ID is %d!!\n',size(k_center_id),CENTER_ON_ID);
+        end
+    end
+end
+
+if CENTER_ON_ID == 0 || isempty(find(nodePositionXY_GroundTh(:,1,1) == CENTER_ON_ID,1))
+    warning('It is not raccomended to run this script without centerning a node! Check CENTER_ON_ID');
 end
 
 %% CALCULATE LINKS  AND OTHERS VARIABLES NEEDED FOR THE LAYOUT
