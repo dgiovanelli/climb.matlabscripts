@@ -24,6 +24,7 @@ else
 end
 Dm_max_value = Inf;
 
+%GENERATE DISTANCE MATRIX
 for linkNo = 1 : size(links,2)
     pos1 = find(nodesList == links(1,linkNo));
     pos2 = find(nodesList == links(2,linkNo));
@@ -59,7 +60,7 @@ while Dm_max_value > epsilon && iteractions < MAX_ITER
     [Dm_max_value, Dm_max_index] = max(Dm);
     A = zeros(2);
     B = zeros(2,1);
-    
+
     for nodeNo_i = 1:nodesAmount
         if nodeNo_i ~= Dm_max_index
             
@@ -91,15 +92,16 @@ while Dm_max_value > epsilon && iteractions < MAX_ITER
     iteractions = iteractions + 1; 
 end
 if iteractions >= MAX_ITER
-    warning('Loop stopped, MAX_ITER reached!');
+    %warning('Loop stopped, MAX_ITER reached!');
 end
 
-opts = optimset('Algorithm','lm-line-search');
-springEnergyCost_an = @(x)springEnergyCost( x,distanceMatrix, k_springs );
-[nodePositionXY,fval] = fminunc(springEnergyCost_an,nodePositionXY,opts);
-
-%[nodePositionXY,fval] = fminunc(@springEnergyCost,nodePositionXY);
+options = optimset('Display','notify');
+springEnergyCost_an = @(x)springEnergyCost( x, distanceMatrix, k_springs );
+[nodePositionXY,fval] = fminunc(springEnergyCost_an,nodePositionXY,options);
+% options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true,'Display','notify');
+% [nodePositionXY,fval] = fminunc(springEnergyCost_an,nodePositionXY,options); %Providing gradient function decrease performance in some cases ....
 
 nodePositionXY = [nodesList , nodePositionXY(:,1:2)];
 
 end
+

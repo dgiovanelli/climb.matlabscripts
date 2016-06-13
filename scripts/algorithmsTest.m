@@ -9,6 +9,8 @@ LAYOUT_ALGORITHM = 2;
 CENTER_ON_ID = 100;
 NOISE_AMPL = 2;
 
+warning('off','optim:fminunc:SwitchingMethod');
+
 firstNodeId = 100;
 duration_s = 10;
 Ts = 0.2;
