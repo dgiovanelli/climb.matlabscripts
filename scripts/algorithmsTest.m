@@ -18,9 +18,9 @@ t = 0:Ts:duration_s;
 generateSampleData
 
 %% ADD NOISE
-noise = rand(size(graphEdeges_m_filt)) * NOISE_AMPL - NOISE_AMPL/2;
-graphEdeges_m_filt = graphEdeges_m_filt + noise;                        % independent noise
-%graphEdeges_m_filt = graphEdeges_m_filt + graphEdeges_m_filt.*noise;   % link length dependent noise
+noise = rand(size(graphEdeges_m)) * NOISE_AMPL - NOISE_AMPL/2;
+%graphEdeges_m_filt = graphEdeges_m_filt + noise;                        % independent noise
+graphEdeges_m_filt = graphEdeges_m + graphEdeges_m.*noise;   % link length dependent noise
 
 %% PROCESS GENERATED DATA
 processSampleData

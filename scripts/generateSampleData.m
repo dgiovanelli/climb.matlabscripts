@@ -91,16 +91,16 @@ end
 
 %% CALCULATE LINKS  AND OTHERS VARIABLES NEEDED FOR THE LAYOUT
 links = [];
-graphEdeges_m_filt = [];
+graphEdeges_m = [];
 for nodeNo_1 = 1:size(nodePositionXY_GroundTh,1)-1
     for nodeNo_2 = nodeNo_1+1:size(nodePositionXY_GroundTh,1)
-        graphEdeges_m_filt_link = [];
+        graphEdeges_m_link = [];
         links = cat(2,links,[nodePositionXY_GroundTh(nodeNo_1,1,1);nodePositionXY_GroundTh(nodeNo_2,1,1)]);
         for timeIndexNo = 1 : size(nodePositionXY_GroundTh,3)
             d = sqrt( (nodePositionXY_GroundTh(nodeNo_2,2,timeIndexNo) - nodePositionXY_GroundTh(nodeNo_1,2,timeIndexNo))^2 + (nodePositionXY_GroundTh(nodeNo_2,3,timeIndexNo) - nodePositionXY_GroundTh(nodeNo_1,3,timeIndexNo))^2 );
-            graphEdeges_m_filt_link = cat(1,graphEdeges_m_filt_link,d);
+            graphEdeges_m_link = cat(1,graphEdeges_m_link,d);
         end
-        graphEdeges_m_filt =  cat(2,graphEdeges_m_filt,graphEdeges_m_filt_link);
+        graphEdeges_m =  cat(2,graphEdeges_m,graphEdeges_m_link);
     end
 end
 LINKS_UNRELIABLITY = zeros(size(t,2),size(links,2));
