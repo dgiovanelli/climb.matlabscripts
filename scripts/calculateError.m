@@ -5,17 +5,24 @@ if (size(nodePositionXY_GroundTh)  ~= size(nodePositionXY))
 end
 
 meanPositioningError = zeros(size(nodePositionXY_GroundTh,3),1);
+A_store = zeros(2,2,size(nodePositionXY_GroundTh,3));
 %% CALCULATING TRANSFORMATION MATRIX
 for timeNo = 1:size(nodePositionXY_GroundTh,3)
     %opts = optimset('Algorithm','lm-line-search');
     positiongErrorCost_an = @(A)positiongErrorCost( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo) );
-    [A,fval] = fminunc(positiongErrorCost_an,eye(2));
+    options = optimset('Display','notify');
+    if timeNo == 1
+        [A,fval] = fminsearch(positiongErrorCost_an,eye(2),options);
+    else
+        [A,fval] = fminsearch(positiongErrorCost_an,A_store(:,:,timeNo-1),options);
+    end
+    A_store(:,:,timeNo) = A;
     meanPositioningError(timeNo) = fval;
     for nodeNo = 1:size(nodePositionXY,1)
         nodePositionXY(nodeNo,2:3,timeNo) = (A*nodePositionXY(nodeNo,2:3,timeNo)')';
     end
 end
-fprintf('AverageError: %.2f m\n',mean(meanPositioningError,1));
+fprintf('AverageError for all nodes for the whole duration: %.2f m\n',mean(meanPositioningError,1));
 
 %% PLOTTING AND EXPORTING NODES LAYOUT
 figure(205)
