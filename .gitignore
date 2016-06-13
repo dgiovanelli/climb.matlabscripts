@@ -5,6 +5,13 @@ output
 output/
 output/*
 
+*/input
+*/input/
+*/input/*
+input
+input/
+input/*
+
 *.asv
 *.log
 
