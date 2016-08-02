@@ -23,6 +23,10 @@ winc_sec = 0.2;
 F_filt = 0.5; %filter cut off frequency [Hz]. Set this to 0 to disable filtering
 n_filt = 2;
 
+% RSSI to m conversion parameters
+k_TF_1= [-16.0845];
+txPwr_10m_1 = -57.9715;
+
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
 %filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_11.11.3.txt';
 filename = 'D:/Drive/CLIMB/WIRELESS/LOG/LOCALIZATION/LOGS/log_139_18.55.27.txt';
@@ -525,8 +529,9 @@ t_zero = T_TAG(2);%min([T_TAG(15);T_id_1]);
 T_TAG = T_TAG - t_zero;
 t_w = t_w - double(t_zero);
 
-% NOTE: graphEdeges_RSSI is already filtered with sliding window 
-graphEdeges_m = RSSI_to_m(graphEdeges_RSSI);
+% NOTE: graphEdeges_RSSI is already filtered with sliding window
+k_TF = [k_TF_1 , txPwr_10m_1];
+graphEdeges_m = RSSI_to_m(graphEdeges_RSSI,k_TF);
 
 %LINK CHECK/RECONSTRUCTION
 %NOTE: graphEdeges_RSSI == -Inf (or graphEdeges_m == Inf) are usually
