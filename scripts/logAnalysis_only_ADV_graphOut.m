@@ -549,8 +549,7 @@ T_TAG = T_TAG - t_zero;
 t_w = t_w - double(t_zero);
 
 % NOTE: graphEdeges_RSSI is already filtered with sliding window
-k_TF = [k_TF_1 , txPwr_10m_1];
-graphEdeges_m = RSSI_to_m(graphEdeges_RSSI,k_TF);
+graphEdeges_m = RSSI_to_m(graphEdeges_RSSI,k_TF_1 , txPwr_10m_1);
 
 %LINK CHECK/RECONSTRUCTION
 %NOTE: graphEdeges_RSSI == -Inf (or graphEdeges_m == Inf) are usually
