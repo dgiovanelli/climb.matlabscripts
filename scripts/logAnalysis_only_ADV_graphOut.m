@@ -371,7 +371,7 @@ else    %% PACKET CHECK
     
     fprintf('PACKET CHECK STATISTICS:\n');
     fprintf('Node ID | received packets | missing packets | PEr\n');
-    for nodeNo = 1 : length(packetStat)
+    for nodeNo = 1 : size(packetStat,1)
         fprintf('%02X      | %d               | %d              | %.2f %%\n',packetStat(nodeNo,1), packetStat(nodeNo,2), packetStat(nodeNo,3) ,  packetStat(nodeNo,3) / (packetStat(nodeNo,2) + packetStat(nodeNo,3))*100 );
     end
     fprintf('\n');
@@ -399,7 +399,7 @@ signalsCount = 0;
 nextPercentPlotIndex = 0;
 str = [];
 fprintf('REORDERING LINKS:\n');
-for i_id_1 = 2:1:size(RSSI_MATRIX,1)
+for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
     for i_id_2 = i_id_1+1:size(RSSI_MATRIX,2)
         T_2to1 = double.empty;
         T_1to2 = double.empty;
@@ -424,7 +424,7 @@ for i_id_1 = 2:1:size(RSSI_MATRIX,1)
         %if (size(T_2to1,1) > 1) || (size(T_1to2,1) > 1) %IF AT LEAST ONE OF THE LINKS HAS DATA GO ON
         if ~isempty(T_2to1) || ~isempty(T_1to2) %IF AT LEAST ONE OF THE LINKS HAS DATA, GO ON!
             RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc); %THIS MERGES RSSI DATA FROM BOTH DIRECTION AND RESAMPLE IT AT winc INTERVAL
-            if ~isempty(RSSI_Signal_W) %THIS IS FOR SAFETY SINCE THE ABOVE CHECK SHOULD AVOID EMPTY RSSI_Signal_W
+            if ~isempty(RSSI_Signal_W)
                 if (isempty(T_2to1) + isempty(T_1to2)) == 0 % both are non empty
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min([ T_2to1',T_1to2' ])) )';
                     legendStrs = {'merged-filtered-resampled','raw 2to1','raw 1to2'};
@@ -536,7 +536,7 @@ graphEdeges_m = RSSI_to_m(graphEdeges_RSSI,k_TF);
 %LINK CHECK/RECONSTRUCTION
 %NOTE: graphEdeges_RSSI == -Inf (or graphEdeges_m == Inf) are usually
 %associated with devices not in range, instead graphEdeges_RSSI == NaN are
-%more associated with missing packets.
+%more associated with missing packets (devices that have been seen at least once).
 fprintf('LINKS RECONSTRUCTION CHECK:\n');
 for edgeNo=1:size(graphEdeges_m,2)
     nanIndexes = find(isnan(graphEdeges_m(:,edgeNo)));
@@ -642,7 +642,7 @@ tmp = abs(t_w - xstop);
 % 1 -- 3[len="2",weight="1";
 % }
 fprintf('CALCULATING LAYOUT:\n');
-nodePositionXY = zeros(length(AVAILABLE_IDs),3,xstop_index-xstart_index);
+nodePositionXY = zeros(size(unique(links),1),3,xstop_index-xstart_index);
 nodePositionIndex = 1;
 nextPercentPlotIndex = xstart_index;
 str = [];
@@ -697,7 +697,7 @@ for timeIndexNo = xstart_index : xstop_index
                 end
             end
             
-        case 2 % Use mesh relaxation scaling for placing nodes
+        case 2 % Use mesh relaxation for placing nodes
                   
             if timeIndexNo == xstart_index
                 nodePositionXY(:,:,nodePositionIndex) = meshRelaxationLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),[]); %1+LINKS_UNRELIABLITY(timeIndexNo,:) is because LINKS_UNRELIABLITY is zero if the link is reliable, inside createDOTdescriptionFile the spring constant is calculated with 1/LINKS_UNRELIABLITY(...). If LINKS_UNRELIABLITY(...) == 0 the constant will be Inf...
