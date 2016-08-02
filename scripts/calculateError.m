@@ -45,7 +45,7 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
     
     plot(regularNodesPositionXY_temp(:,2),regularNodesPositionXY_temp(:,3),'bo',masterNodePositionXY_temp(:,2),masterNodePositionXY_temp(:,3),'ro',focusNodesPositionXY_temp(:,2),focusNodesPositionXY_temp(:,3),'go','LineWidth',3);
     hold on;
-    plot(regularNodesPositionXY_GroundTh_temp(:,2),regularNodesPositionXY_GroundTh_temp(:,3),'g.',masterNodePositionXY_GroundTh_temp(:,2),masterNodePositionXY_GroundTh_temp(:,3),'y.',focusNodesPositionXY_GroundTh_temp(:,2),focusNodesPositionXY_GroundTh_temp(:,3),'r.','LineWidth',3);
+    plot(regularNodesPositionXY_GroundTh_temp(:,2),regularNodesPositionXY_GroundTh_temp(:,3),'ro',masterNodePositionXY_GroundTh_temp(:,2),masterNodePositionXY_GroundTh_temp(:,3),'y.',focusNodesPositionXY_GroundTh_temp(:,2),focusNodesPositionXY_GroundTh_temp(:,3),'r.','LineWidth',3);
     hold off;
     xlabel('[m]?');
     ylabel('[m]?');
