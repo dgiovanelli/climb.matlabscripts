@@ -450,7 +450,7 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
                 if isempty(t_w) %% this is run only once at the first iteration of the nested loops
                     graphEdeges_RSSI = RSSI_Signal_W;
                     t_w = T_W;
-                    links = [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)];
+                    %links = [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)];
                 else
                     if ((min(t_w) - winc) >= min(T_W)) || (max(T_W) > (max(t_w) )) %%the T_W values are not contained within t_w
                         if (min(t_w) - winc) >= min(T_W) %%the current T_2to1_W array starts before t_2to1 array
@@ -471,9 +471,21 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
                             end
                             % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
                             graphEdeges_RSSI = graphEdeges_RSSI_temp;
-                        end
-                        
-                        if max(T_W) > (max(t_w) ) %%the current T_2to1_W array finishes after t_2to1 array
+                            
+                            if max(T_W) > (max(t_w) ) %%the current T_2to1_W array also finishes after t_2to1 array
+                                % CREATE THE MISSING TIME VALUES
+                                t_temp = (max(t_w):winc:max(T_W))';
+                                % APPEND THEM TO THE OLD t_w
+                                t_w = cat(1,t_w,t_temp);
+                                
+                                % CREATE MISSING graphEdeges_RSSI SAMPLES
+                                graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)) * (-Inf);
+                                graphEdeges_RSSI_temp( 1:size(graphEdeges_RSSI,1) ,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
+                                graphEdeges_RSSI_temp(end-size(RSSI_Signal_W,1)+1 : end,end) = RSSI_Signal_W;
+                                % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
+                                graphEdeges_RSSI = graphEdeges_RSSI_temp;
+                            end
+                        elseif max(T_W) > (max(t_w) ) %%the current T_2to1_W array finishes after t_2to1 array
                             % CREATE THE MISSING TIME VALUES
                             t_temp = (max(t_w):winc:max(T_W))';
                             % APPEND THEM TO THE OLD t_w
@@ -496,16 +508,23 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
                         % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
                         graphEdeges_RSSI = graphEdeges_RSSI_temp;
                     end
-                    links = cat(2,links, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
                 end
-                
 %                 figure(100)
 %                 plot(t_w*TICK_DURATION,graphEdeges_RSSI(:,end),'col',colorlist(i,:))
 %                 hold on;
                 signalsCount = signalsCount + 1;
-            else
+                if size(graphEdeges_RSSI) ~= signalsCount + emptySignalsCount
+                    error('something wrong appened');
+                end
+            else %create an -Inf signal that replace the missing edge
+                graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
+                graphEdeges_RSSI_temp( 1:size(graphEdeges_RSSI,1) ,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
+                % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
+                graphEdeges_RSSI = graphEdeges_RSSI_temp;
                 emptySignalsCount = emptySignalsCount + 1;
             end
+            
+            links = cat(2,links, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
             
             if i > nextPercentPlotIndex
                 nextPercentPlotIndex = nextPercentPlotIndex + 5;
