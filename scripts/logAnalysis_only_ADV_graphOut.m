@@ -2,12 +2,10 @@ clear all;
 close all;
 %clc;
 
-FOCUS_ID_1 = 161;
-FOCUS_ID_2 = 167;
-IDs_TO_CONSIDER = [161, 162, 163, 164, 165, 166, 167];%161:1:167; % set this to empty to select all IDs
-%IDs_TO_CONSIDER = [2,3,4,9,11];
-%IDs_TO_CONSIDER = [6, 3, 129, 2, 4, 1];
-%IDs_TO_CONSIDER = [ 48, 50,  52,  72, 70, 51, 53,  58, 54, 57, 62, 61, 60, 56, 55, 75, 67, 65, 64, 68, 66, 49 ];
+FOCUS_ID_1 = 0;
+FOCUS_ID_2 = 0;
+IDs_TO_CONSIDER = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]; % set this to empty to select all IDs
+%IDs_TO_CONSIDER = [4, 5, 171, 172, 173];
 if isempty(IDs_TO_CONSIDER) 
     AMOUNT_OF_NODE = 30;
 else
@@ -16,11 +14,11 @@ end
 ANDROID = 1; %set this to 1 if the log has been performed with the android app
 SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plotted (and the packet counter info are discarded)
 PLOT_NODE_LABELS = 1; %setting this to 1 node labels are removed from plot, and the master node is plotted in red
-CENTER_ON_ID = 161; %the plot will be centered on this node. Set to zero to free layouts
+CENTER_ON_ID = 1; %the plot will be centered on this node. Set to zero to free layouts
 LAYOUT_ALGORITHM = 2; %select the algorithm to use ( 0 -> neato, 1 -> MDS, 2 -> Mesh relaxation
-wsize_sec = 7;
-winc_sec = 0.2;
-F_filt = 0.5; %filter cut off frequency [Hz]. Set this to 0 to disable filtering
+wsize_sec = 15;
+winc_sec = 10;
+F_filt = 0; %filter cut off frequency [Hz]. Set this to 0 to disable filtering.
 n_filt = 2;
 TREAT_AS_STATIC = 1; %when this is set to 1 the link length signals are averaged over the whole test (ignoring Infs)
 
@@ -28,9 +26,8 @@ TREAT_AS_STATIC = 1; %when this is set to 1 the link length signals are averaged
 k_TF_1= [-16.0845];
 txPwr_10m_1 = -57.9715;
 
-%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/TEST_FBK/LOGS/19_02_16/log_50_10.49.29.txt';
-%filename = 'D:/Drive/CLIMB/WIRELESS/LOG/SECOND_TEST_2015_12_21/APP_LOG/MASTER/log_355_11.11.3.txt';
-filename = 'D:/Drive/CLIMB/WIRELESS/LOG/LOCALIZATION/LOGS/log_139_18.55.27.txt';
+%filename = 'D:\Drive\E3DA Shared\Tirocini&Tesi\Stage Superiori giu-2016\CLIMB\LOGS\TEST_MUSE_2016_6_16\DATA\log_168_11.13.26.txt';
+filename = 'D:\Drive\CLIMB\WIRELESS\LOG\LOCALIZATION\MUSE_02_08_2016\LOGS\log_215_11.37.0.txt';
 
 delimiter = ' ';
 CHECK_FOR_NOT_INCREMENTED_COUNTER = 1;
@@ -421,7 +418,7 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
             end
             
         end
-        
+
         %if (size(T_2to1,1) > 1) || (size(T_1to2,1) > 1) %IF AT LEAST ONE OF THE LINKS HAS DATA GO ON
         if ~isempty(T_2to1) || ~isempty(T_1to2) %IF AT LEAST ONE OF THE LINKS HAS DATA, GO ON!
             RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc); %THIS MERGES RSSI DATA FROM BOTH DIRECTION AND RESAMPLE IT AT winc INTERVAL
@@ -775,7 +772,7 @@ figure(205)
 filename = '../output/output_Animation.gif';
 fps = 1/winc_sec*5;
 colorlist2 = hsv( size(nodePositionXY,1) );
-squareDim = 50;
+squareDim = 25;
 for timeIndexNo = 1 : size(nodePositionXY,3)
     nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
     nodesOutsideSquare = 0;
@@ -789,7 +786,7 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
     for nodeNo = 1 : size(nodePositionXY_temp,1)
         if PLOT_NODE_LABELS == 1
             str = sprintf('%x',nodePositionXY_temp(nodeNo,1));
-            text(nodePositionXY_temp(nodeNo,2)+3,nodePositionXY_temp(nodeNo,3),str,'Color',colorlist2(nodeNo,:),'FontSize',14,'FontWeight','bold');
+            text(nodePositionXY_temp(nodeNo,2)+1,nodePositionXY_temp(nodeNo,3),str,'Color',colorlist2(nodeNo,:),'FontSize',14,'FontWeight','bold');
         end
         if nodePositionXY_temp(nodeNo,2) > squareDim || nodePositionXY_temp(nodeNo,2) < -squareDim || nodePositionXY_temp(nodeNo,3) > squareDim || nodePositionXY_temp(nodeNo,3) < -squareDim
             nodesOutsideSquare = nodesOutsideSquare + 1;
