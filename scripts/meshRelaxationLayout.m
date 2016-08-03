@@ -1,6 +1,7 @@
 function nodePositionXY = meshRelaxationLayout(edegesLength, links, unreliablility ,startingPos)
 
-epsilon = 10;
+epsilon_D_energy = 0.00001; %this is used when the stop condition is on the slope of energy associated to one node
+epsilon_d_movement = 0.1;  %this is used when the stop condition is on the minimum movement of the node
 MAX_ITER = 0;
 iteractions = 0;
 
@@ -23,7 +24,7 @@ else
     nodePositionXY = startingPos;
 end
 Dm_max_value = Inf;
-
+d = Inf;
 %GENERATE DISTANCE MATRIX
 for linkNo = 1 : size(links,2)
     pos1 = find(nodesList == links(1,linkNo));
@@ -39,7 +40,8 @@ for linkNo = 1 : size(links,2)
     k_springs(pos2, pos1) = k_springs(pos2, pos1)/unreliablility(linkNo);
 end
 
-while Dm_max_value > epsilon && iteractions < MAX_ITER
+%while Dm_max_value > epsilon && iteractions < MAX_ITER
+while d > epsilon_d_movement && iteractions < MAX_ITER
     for nodeNo_m = 1:nodesAmount
         for nodeNo_i = 1:nodesAmount
             
@@ -60,7 +62,7 @@ while Dm_max_value > epsilon && iteractions < MAX_ITER
     [Dm_max_value, Dm_max_index] = max(Dm);
     A = zeros(2);
     B = zeros(2,1);
-
+    
     for nodeNo_i = 1:nodesAmount
         if nodeNo_i ~= Dm_max_index
             if distanceMatrix(Dm_max_index, nodeNo_i) ~= Inf
