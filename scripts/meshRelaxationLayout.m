@@ -4,18 +4,19 @@ epsilon_D_energy = 0.00001; %this is used when the stop condition is on the slop
 epsilon_d_movement = 0.1;  %this is used when the stop condition is on the minimum movement of the node
 MAX_ITER = 0;
 iteractions = 0;
+k_spring_default = 10;
 
 nodesList = unique( links );
 nodesAmount = size(nodesList,1);
 
 distanceMatrix = zeros(nodesAmount);
-k_springs = k_default*ones(nodesAmount);
+k_springs = k_spring_default*ones(nodesAmount);
 dEdx = zeros(nodesAmount);
 dEdy = zeros(nodesAmount);
 Dm = zeros(nodesAmount,1);
 if isempty(startingPos)
     nodePositionXY = rand(nodesAmount,2)*2-1;
-    r = 100*max(edegesLength);
+    r = 100*max(edegesLength(edegesLength ~= Inf)); %avoid Infs
     deltaPhi_rad = (2*pi)/nodesAmount;
     for nodeNo = 1:nodesAmount
         nodePositionXY(nodeNo,:) = [r*sin(deltaPhi_rad*nodeNo), r*cos(deltaPhi_rad*nodeNo)];
