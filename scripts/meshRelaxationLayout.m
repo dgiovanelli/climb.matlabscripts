@@ -90,6 +90,7 @@ while d > epsilon_d_movement && iteractions < MAX_ITER
     X = linsolve(A,B);
     dx = X(1);
     dy = X(2);
+    d = sqrt(dx^2 + dy^2);
     
     nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [dx,dy];
 
