@@ -1,25 +1,24 @@
 
+% if sum(size(nodePositionXY_GroundTh)  ~= size(nodePositionXY))
+%     error('size(nodePositionXY_GroundTh)  ~= size(nodePositionXY)');
+% end
 
-if (size(nodePositionXY_GroundTh)  ~= size(nodePositionXY))
-    error('size(nodePositionXY_GroundTh)  ~= size(nodePositionXY)');
-end
-
-meanPositioningError = zeros(size(nodePositionXY_GroundTh,3),1);
-A_store = zeros(2,2,size(nodePositionXY_GroundTh,3));
+meanPositioningError = zeros(size(nodePositionXY,3),1);
+A_store = zeros(2,2,size(nodePositionXY,3));
 %% CALCULATING TRANSFORMATION MATRIX
-for timeNo = 1:size(nodePositionXY_GroundTh,3)
+for timeNo = xstart_index : xstop_index
     %opts = optimset('Algorithm','lm-line-search');
-    positiongErrorCost_an = @(A)positiongErrorCost( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo) );
+    positiongErrorCost_an = @(A)positiongErrorCost( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo-xstart_index+1) );
     options = optimset('Display','notify');
-    if timeNo == 1
+    if timeNo == xstart_index
         [A,fval] = fminsearch(positiongErrorCost_an,eye(2),options);
     else
-        [A,fval] = fminsearch(positiongErrorCost_an,A_store(:,:,timeNo-1),options);
+        [A,fval] = fminsearch(positiongErrorCost_an,A_store(:,:,timeNo-xstart_index),options);
     end
-    A_store(:,:,timeNo) = A;
-    meanPositioningError(timeNo) = fval;
+    A_store(:,:,timeNo-xstart_index+1) = A;
+    meanPositioningError(timeNo-xstart_index+1) = fval;
     for nodeNo = 1:size(nodePositionXY,1)
-        nodePositionXY(nodeNo,2:3,timeNo) = (A*nodePositionXY(nodeNo,2:3,timeNo)')';
+        nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1) = (A*nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1)')';
     end
 end
 fprintf('AverageError for all nodes for the whole duration: %.2f m\n',mean(meanPositioningError,1));
@@ -28,10 +27,10 @@ fprintf('AverageError for all nodes for the whole duration: %.2f m\n',mean(meanP
 figure(205)
 filename = '../output/output_Animation_sampleData.gif';
 fps = 1/Ts*5;
-colorlist2 = hsv( size(nodePositionXY,1) );
+colorlist2 = hsv( xstop_index - xstart_index + 1 );
 squareDim = 50;
-for timeIndexNo = 1 : size(nodePositionXY,3)
-    nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
+for timeIndexNo = xstart_index : xstop_index
+    nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo-xstart_index+1) ~= 0,:, timeIndexNo-xstart_index+1);
     nodePositionXY_GroundTh_temp = nodePositionXY_GroundTh(nodePositionXY_GroundTh(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
     
     regularNodesPositionXY_temp =  nodePositionXY_temp(nodePositionXY_temp(:,1)~=254 & nodePositionXY_temp(:,1)~=FOCUS_ID_1 & nodePositionXY_temp(:,1)~=FOCUS_ID_2,:);
@@ -69,7 +68,7 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
     frame = getframe(205);
     im = frame2im(frame);
     [imind,cm] = rgb2ind(im,256);
-    if timeIndexNo == 1;
+    if timeIndexNo == xstart_index
         imwrite(imind,cm,filename,'gif', 'Loopcount',Inf,'delaytime',1/fps);
     else
         imwrite(imind,cm,filename,'gif','WriteMode','append','delaytime',1/fps);

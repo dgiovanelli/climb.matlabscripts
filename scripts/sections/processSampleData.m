@@ -76,7 +76,7 @@ xstop_index = size(graphEdeges_m_filt,1);
 % }
 fprintf('CALCULATING LAYOUT:\n');
 nodePositionXY = zeros(length(AVAILABLE_IDs),3,xstop_index-xstart_index);
-nodePositionIndex = 1;
+timeIndexNo_for_nodePositionXY = 1;
 nextPercentPlotIndex = xstart_index;
 str = [];
 for timeIndexNo = xstart_index : xstop_index
@@ -86,7 +86,7 @@ for timeIndexNo = xstart_index : xstop_index
             if timeIndexNo == xstart_index
                 createDOTdescriptionFile( graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:) , '../output/output_m_temp.dot',[]); %1+LINKS_UNRELIABLITY(timeIndexNo,:) is because LINKS_UNRELIABLITY is zero if the link is reliable, inside createDOTdescriptionFile the spring constant is calculated with 1/LINKS_UNRELIABLITY(...). If LINKS_UNRELIABLITY(...) == 0 the constant will be Inf...
             else
-                createDOTdescriptionFile( graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:) , '../output/output_m_temp.dot',nodePositionXY(:,:,nodePositionIndex-1));
+                createDOTdescriptionFile( graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:) , '../output/output_m_temp.dot',nodePositionXY(:,:,timeIndexNo_for_nodePositionXY-1));
             end
             [status,cmdout] = dos('neato -Tplain ../output/output_m_temp.dot');
             if status == 0
@@ -96,11 +96,11 @@ for timeIndexNo = xstart_index : xstop_index
                     tLine = sscanf( char(textLines{1}(textLineNo)),'%s %d %f %f');
                     if( tLine(1) == 'n' && tLine(2) == 'o' && tLine(3) == 'd' && tLine(4) == 'e')
                         k = find(AVAILABLE_IDs == tLine(5) )+1;
-                        nodePositionXY(k-1,:,nodePositionIndex) = tLine(5:7)';
+                        nodePositionXY(k-1,:,timeIndexNo_for_nodePositionXY) = tLine(5:7)';
                         if tLine(5) == CENTER_ON_ID
                             k_center_id = k;
                             if CENTER_ON_ID ~= 0
-                                CENTERING_OFFSET_XY = nodePositionXY(k_center_id-1,2:3,nodePositionIndex);
+                                CENTERING_OFFSET_XY = nodePositionXY(k_center_id-1,2:3,timeIndexNo_for_nodePositionXY);
                             end
                         end
                     end
@@ -108,8 +108,8 @@ for timeIndexNo = xstart_index : xstop_index
                 
                 if CENTER_ON_ID ~= 0 && sum(CENTERING_OFFSET_XY) ~= 0
                     for i_id = 1:size(nodePositionXY,1)
-                        if nodePositionXY(i_id,1,nodePositionIndex) ~= 0
-                            nodePositionXY(i_id,2:3,nodePositionIndex) = nodePositionXY(i_id,2:3,nodePositionIndex) - CENTERING_OFFSET_XY;
+                        if nodePositionXY(i_id,1,timeIndexNo_for_nodePositionXY) ~= 0
+                            nodePositionXY(i_id,2:3,timeIndexNo_for_nodePositionXY) = nodePositionXY(i_id,2:3,timeIndexNo_for_nodePositionXY) - CENTERING_OFFSET_XY;
                         end
                     end
                 end
@@ -117,39 +117,39 @@ for timeIndexNo = xstart_index : xstop_index
             end
         case 1 % Use multidimensional scaling for placing nodes
             if timeIndexNo == xstart_index
-                nodePositionXY(:,:,nodePositionIndex) = mdsLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),[]); %1+LINKS_UNRELIABLITY(timeIndexNo,:) is because LINKS_UNRELIABLITY is zero if the link is reliable, inside createDOTdescriptionFile the spring constant is calculated with 1/LINKS_UNRELIABLITY(...). If LINKS_UNRELIABLITY(...) == 0 the constant will be Inf...
+                nodePositionXY(:,:,timeIndexNo_for_nodePositionXY) = mdsLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),[]); %1+LINKS_UNRELIABLITY(timeIndexNo,:) is because LINKS_UNRELIABLITY is zero if the link is reliable, inside createDOTdescriptionFile the spring constant is calculated with 1/LINKS_UNRELIABLITY(...). If LINKS_UNRELIABLITY(...) == 0 the constant will be Inf...
                 k_center_id = find(nodePositionXY(:,1,1) == CENTER_ON_ID);
             else
-                nodePositionXY(:,:,nodePositionIndex) = mdsLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),nodePositionXY(:,2:3,nodePositionIndex-1));
+                nodePositionXY(:,:,timeIndexNo_for_nodePositionXY) = mdsLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY-1));
             end
             
             if size(k_center_id,1) == 1
                 if CENTER_ON_ID ~= 0
-                    CENTERING_OFFSET_XY = nodePositionXY(k_center_id,2:3,nodePositionIndex);
-                    nodePositionXY(:,2:3,nodePositionIndex) = nodePositionXY(:,2:3,nodePositionIndex) - [ones(size(nodePositionXY(:,2:3,nodePositionIndex),1),1) * CENTERING_OFFSET_XY(1), ones(size(nodePositionXY(:,2:3,nodePositionIndex),1),1) * CENTERING_OFFSET_XY(2)];
+                    CENTERING_OFFSET_XY = nodePositionXY(k_center_id,2:3,timeIndexNo_for_nodePositionXY);
+                    nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY) = nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY) - [ones(size(nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY),1),1) * CENTERING_OFFSET_XY(1), ones(size(nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY),1),1) * CENTERING_OFFSET_XY(2)];
                 end
             end
             
         case 2 % Use mesh relaxation for placing nodes
                   
             if timeIndexNo == xstart_index
-                nodePositionXY(:,:,nodePositionIndex) = meshRelaxationLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),[]); %1+LINKS_UNRELIABLITY(timeIndexNo,:) is because LINKS_UNRELIABLITY is zero if the link is reliable, inside createDOTdescriptionFile the spring constant is calculated with 1/LINKS_UNRELIABLITY(...). If LINKS_UNRELIABLITY(...) == 0 the constant will be Inf...
+                nodePositionXY(:,:,timeIndexNo_for_nodePositionXY) = meshRelaxationLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),[]); %1+LINKS_UNRELIABLITY(timeIndexNo,:) is because LINKS_UNRELIABLITY is zero if the link is reliable, inside createDOTdescriptionFile the spring constant is calculated with 1/LINKS_UNRELIABLITY(...). If LINKS_UNRELIABLITY(...) == 0 the constant will be Inf...
                 k_center_id = find(nodePositionXY(:,1,1) == CENTER_ON_ID);
             else
-                nodePositionXY(:,:,nodePositionIndex) = meshRelaxationLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),nodePositionXY(:,2:3,nodePositionIndex-1));
+                nodePositionXY(:,:,timeIndexNo_for_nodePositionXY) = meshRelaxationLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY-1));
             end
             
             if size(k_center_id,1) == 1
                 if CENTER_ON_ID ~= 0
-                    CENTERING_OFFSET_XY = nodePositionXY(k_center_id,2:3,nodePositionIndex);
-                    nodePositionXY(:,2:3,nodePositionIndex) = nodePositionXY(:,2:3,nodePositionIndex) - [ones(size(nodePositionXY(:,2:3,nodePositionIndex),1),1) * CENTERING_OFFSET_XY(1), ones(size(nodePositionXY(:,2:3,nodePositionIndex),1),1) * CENTERING_OFFSET_XY(2)];
+                    CENTERING_OFFSET_XY = nodePositionXY(k_center_id,2:3,timeIndexNo_for_nodePositionXY);
+                    nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY) = nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY) - [ones(size(nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY),1),1) * CENTERING_OFFSET_XY(1), ones(size(nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY),1),1) * CENTERING_OFFSET_XY(2)];
                 end
             end
         otherwise
             error('Select a valid value for LAYOUT_ALGORITHM!');
     end
     
-    nodePositionIndex = nodePositionIndex + 1;
+    timeIndexNo_for_nodePositionXY = timeIndexNo_for_nodePositionXY + 1;
     
     if timeIndexNo > nextPercentPlotIndex
         nextPercentPlotIndex = nextPercentPlotIndex + (xstop_index-xstart_index)/100;

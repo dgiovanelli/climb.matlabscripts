@@ -6,7 +6,7 @@ fixedNodeNo = 0; %NB: the firs node is automatically inserted at pos (0,0)
 figure(1)
 %plot(fixedNodesPositionXY(1,2), fixedNodesPositionXY(1,3),'o')
 plot(1000,1000);
-axis([-1, 21, -1, 21]);
+axis([-50, 50, -50, 50]);
 grid on;
 
 fprintf('Insert new nodes by clicking on image (right click to stop)\n');
@@ -20,7 +20,7 @@ while button == 1
             fixedNodesPositionXY = [fixedNodesPositionXY(1:fixedNodeNo,:);[firstNodeId+fixedNodeNo , x , y]];
         end
         plot(fixedNodesPositionXY(1:fixedNodeNo+1,2), fixedNodesPositionXY(1:fixedNodeNo+1,3),'o');
-        axis([-1, 21, -1, 21]);
+        axis([-50, 50, -50, 50]);
         grid on;
         fixedNodeNo = fixedNodeNo+1;
     end
@@ -46,11 +46,11 @@ while button == 1
             speed_XY = len_XY./duration_s;
             
             if movingNodeNo == 0
-                movingNodePositionXY = zeros(1,3,size(t,2));
+                movingNodePositionXY = zeros(1,3,size(t_w,2));
             end
             
-            for timeNo = 1:size(t,2)
-                movingNodePositionXY(movingNodeNo+1,:,timeNo) = [firstNodeId+fixedNodeNo+movingNodeNo, start_XY+speed_XY.*timeNo.*Ts];
+            for timeNo = 1:size(t_w,2)
+                movingNodePositionXY(movingNodeNo+1,:,timeNo) = [firstNodeId+fixedNodeNo+movingNodeNo, start_XY+speed_XY.*(timeNo-1).*Ts];
             end
             movingNodeNo = movingNodeNo + 1;
         end
@@ -61,8 +61,8 @@ if movingNodeNo == 0 && fixedNodeNo == 0
 end
 
 fprintf('Moving nodes inserted!\n\n');
-nodePositionXY_GroundTh = zeros(fixedNodeNo+movingNodeNo,3,size(t,2));
-for timeNo = 1:size(t,2)
+nodePositionXY_GroundTh = zeros(fixedNodeNo+movingNodeNo,3,size(t_w,2));
+for timeNo = 1:size(t_w,2)
     if movingNodeNo ~= 0 && fixedNodeNo ~= 0
         nodePositionXY_GroundTh(:,:,timeNo) = [fixedNodesPositionXY ; movingNodePositionXY(:,:,timeNo)];
     elseif fixedNodeNo ~= 0
@@ -103,7 +103,7 @@ for nodeNo_1 = 1:size(nodePositionXY_GroundTh,1)-1
         graphEdeges_m =  cat(2,graphEdeges_m,graphEdeges_m_link);
     end
 end
-LINKS_UNRELIABLITY = zeros(size(t,2),size(links,2));
+LINKS_UNRELIABLITY = zeros(size(t_w,2),size(links,2));
 AVAILABLE_IDs = nodePositionXY_GroundTh(:,1,1);
 
 %% PLAYBACK THE GENERATED DATA
@@ -148,3 +148,5 @@ for timeIndexNo = 1 : size(nodePositionXY_GroundTh,3)
 end
 
 
+T_TAG = [];
+TICK_DURATION = 1;
