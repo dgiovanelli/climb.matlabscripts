@@ -7,24 +7,27 @@ title('All links');
 grid on;
 hold off;
 
-fprintf('Click on the analysis bounds!\n');
-[x1,~] = ginput(1);
-[x2,~] = ginput(1);
-if x1 > x2 
-    xstop = x1/TICK_DURATION;
-    xstart = x2/TICK_DURATION;
+if TREAT_AS_STATIC == 0
+    fprintf('Click on the analysis bounds!\n');
+    [x1,~] = ginput(1);
+    [x2,~] = ginput(1);
+    if x1 > x2
+        xstop = x1/TICK_DURATION;
+        xstart = x2/TICK_DURATION;
+    else
+        xstop = x2/TICK_DURATION;
+        xstart = x1/TICK_DURATION;
+    end
+    
+    tmp = abs(t_w - xstart);
+    [ ~ , xstart_index] = min(tmp);
+    tmp = abs(t_w - xstop);
+    [ ~ , xstop_index] = min(tmp);
 else
-    xstop = x2/TICK_DURATION;
-    xstart = x1/TICK_DURATION;
+    xstart_index = 1;
+    xstop_index = size(graphEdeges_m_filt,1);
 end
-
-tmp = abs(t_w - xstart);
-[ ~ , xstart_index] = min(tmp);
-tmp = abs(t_w - xstop);
-[ ~ , xstop_index] = min(tmp);
  
-% xstart_index = 1;
-% xstop_index = length(graphEdeges_m)-1;
 %% CALCULATING NODES LAYOUT
 % NOTE: for now, changing the spring constant has no evident effect on
 % layout. Moreover neato fail to layouts a matematical straigt line such as:
