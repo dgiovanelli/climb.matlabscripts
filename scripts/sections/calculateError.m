@@ -24,7 +24,7 @@ end
 fprintf('AverageError for all nodes for the whole duration: %.2f m\n',mean(meanPositioningError,1));
 
 %% PLOTTING AND EXPORTING NODES LAYOUT
-figure(205)
+figure(215)
 filename = '../output/output_Animation_sampleData.gif';
 fps = 1/Ts*5;
 colorlist2 = hsv( xstop_index - xstart_index + 1 );
@@ -65,7 +65,7 @@ for timeIndexNo = xstart_index : xstop_index
     axis([-squareDim squareDim -squareDim squareDim]);
     
     drawnow
-    frame = getframe(205);
+    frame = getframe(215);
     im = frame2im(frame);
     [imind,cm] = rgb2ind(im,256);
     if timeIndexNo == xstart_index
