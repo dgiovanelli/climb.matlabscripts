@@ -6,7 +6,7 @@
 meanPositioningError = zeros(size(nodePositionXY,3),1);
 nodePositionXY_transform = zeros(size(nodePositionXY));
 nodePositionXY_transform(:,1,:) = nodePositionXY(:,1,:);
-if ENABLE_FULL_TRANSFORMATION
+if ENABLE_FREE_TRANSFORMATION
     A_store = zeros(3,2,size(nodePositionXY,3));
 else
     A_store = zeros(2,2,size(nodePositionXY,3));
@@ -18,14 +18,14 @@ end
 %% CALCULATING TRANSFORMATION MATRIX
 for timeNo = xstart_index : xstop_index
     %opts = optimset('Algorithm','lm-line-search');
-    if ENABLE_FULL_TRANSFORMATION
+    if ENABLE_FREE_TRANSFORMATION
         positiongErrorCost_an = @(A)positiongErrorCost_FreeTrans( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo-xstart_index+1) );
     else
         positiongErrorCost_an = @(A)positiongErrorCost_RotRefTrasl( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo-xstart_index+1) );
     end
     options = optimset('Display','notify');
     if timeNo == xstart_index
-        if ENABLE_FULL_TRANSFORMATION
+        if ENABLE_FREE_TRANSFORMATION
             [A,fval] = fminsearch(positiongErrorCost_an,[eye(2);0,0],options);
         else
             [A,fval] = fminsearch(positiongErrorCost_an,[0,0;0,0],options);
@@ -39,7 +39,7 @@ for timeNo = xstart_index : xstop_index
     for nodeNo = 1:size(nodePositionXY,1)
         %nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1) = ((A(1:2,1:2)*nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1)')+ A(3,:)')';
         %nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1) = ([-cos(A) , sin(A); sin(A),cos(A)]*nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1)')';
-        if ENABLE_FULL_TRANSFORMATION
+        if ENABLE_FREE_TRANSFORMATION
             nodePositionXY_transform(nodeNo,2:3,timeNo-xstart_index+1) = ((A(1:2,1:2)*nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1)')+ A(3,:)')';
         else
             if A(1,2) > 0
