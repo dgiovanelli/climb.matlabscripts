@@ -15,4 +15,4 @@ input/*
 *.asv
 *.log
 
-last_run.mat
+*.mat
