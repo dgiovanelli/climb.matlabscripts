@@ -3,7 +3,7 @@ figure(205)
 filename = '../output/output_Animation.gif';
 fps = 1/winc_sec*5;
 colorlist2 = hsv( size(nodePositionXY,1) );
-squareDim = 25;
+squareDim = SQUARE_SIZE_M/2;
 for timeIndexNo = 1 : size(nodePositionXY,3)
     nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
     nodesOutsideSquare = 0;

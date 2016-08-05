@@ -29,6 +29,7 @@ filename = '../output/output_Animation_sampleData.gif';
 fps = 1/Ts*5;
 colorlist2 = hsv( xstop_index - xstart_index + 1 );
 squareDim = 50;
+squareDim = SQUARE_SIZE_M/2;
 for timeIndexNo = xstart_index : xstop_index
     nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo-xstart_index+1) ~= 0,:, timeIndexNo-xstart_index+1);
     nodePositionXY_GroundTh_temp = nodePositionXY_GroundTh(nodePositionXY_GroundTh(:,1,timeIndexNo) ~= 0,:, timeIndexNo);

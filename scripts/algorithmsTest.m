@@ -12,6 +12,7 @@ F_filt = 0; %filter cut off frequency [Hz]. Set this to 0 to disable filtering.
 n_filt = 2;
 TREAT_AS_STATIC = 0; %when this is set to 1 the link length signals are averaged over the whole test (ignoring Infs)
 
+SQUARE_SIZE_M = 40;   %plot square dimentions (meters)
 k_TF_1= [-16.0845];
 txPwr_10m_1 = -57.9715;
 

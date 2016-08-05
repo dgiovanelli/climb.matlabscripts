@@ -1,12 +1,12 @@
 %% GENERATE SAMPLE DATA FOR FIXED NODES
 button = 1;
-fixedNodeNo = 0; %NB: the firs node is automatically inserted at pos (0,0)
+fixedNodeNo = 0; 
 
 %fixedNodesPositionXY(1,:) = [firstNodeId, 0, 0];
 figure(1)
 %plot(fixedNodesPositionXY(1,2), fixedNodesPositionXY(1,3),'o')
 plot(1000,1000);
-axis([-50, 50, -50, 50]);
+axis([-SQUARE_SIZE_M/2, SQUARE_SIZE_M/2, -SQUARE_SIZE_M/2, SQUARE_SIZE_M/2]);
 grid on;
 
 fprintf('Insert new nodes by clicking on image (right click to stop)\n');
@@ -20,7 +20,7 @@ while button == 1
             fixedNodesPositionXY = [fixedNodesPositionXY(1:fixedNodeNo,:);[firstNodeId+fixedNodeNo , x , y]];
         end
         plot(fixedNodesPositionXY(1:fixedNodeNo+1,2), fixedNodesPositionXY(1:fixedNodeNo+1,3),'o');
-        axis([-50, 50, -50, 50]);
+        axis([-SQUARE_SIZE_M/2, SQUARE_SIZE_M/2, -SQUARE_SIZE_M/2, SQUARE_SIZE_M/2]);
         grid on;
         fixedNodeNo = fixedNodeNo+1;
     end
@@ -111,7 +111,7 @@ figure(2)
 filename = '../output/fakeData.gif';
 fps = 1/Ts*5;
 colorlist2 = hsv( size(nodePositionXY_GroundTh,1) );
-squareDim = 50;
+squareDim = SQUARE_SIZE_M/2;
 fprintf('Playback data!\n\n');
 for timeIndexNo = 1 : size(nodePositionXY_GroundTh,3)
     nodePositionXY_temp = nodePositionXY_GroundTh(nodePositionXY_GroundTh(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
