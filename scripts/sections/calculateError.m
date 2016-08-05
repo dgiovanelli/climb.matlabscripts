@@ -21,7 +21,7 @@ for timeNo = xstart_index : xstop_index
     if ENABLE_FULL_TRANSFORMATION
         positiongErrorCost_an = @(A)positiongErrorCost_full_Trans( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo-xstart_index+1) );
     else
-        positiongErrorCost_an = @(A)positiongErrorCost( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo-xstart_index+1) );
+        positiongErrorCost_an = @(A)positiongErrorCost_RotRefTrasl( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo-xstart_index+1) );
     end
     options = optimset('Display','notify');
     if timeNo == xstart_index
