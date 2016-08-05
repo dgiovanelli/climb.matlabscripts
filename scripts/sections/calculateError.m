@@ -19,7 +19,7 @@ end
 for timeNo = xstart_index : xstop_index
     %opts = optimset('Algorithm','lm-line-search');
     if ENABLE_FULL_TRANSFORMATION
-        positiongErrorCost_an = @(A)positiongErrorCost_full_Trans( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo-xstart_index+1) );
+        positiongErrorCost_an = @(A)positiongErrorCost_FreeTrans( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo-xstart_index+1) );
     else
         positiongErrorCost_an = @(A)positiongErrorCost_RotRefTrasl( A,nodePositionXY_GroundTh(:,:,timeNo), nodePositionXY(:,:,timeNo-xstart_index+1) );
     end
