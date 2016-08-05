@@ -22,6 +22,7 @@ F_filt = 0; %filter cut off frequency [Hz]. Set this to 0 to disable filtering.
 n_filt = 2;
 TREAT_AS_STATIC = 1; %when this is set to 1 the link length signals are averaged over the whole test (ignoring Infs)
 SQUARE_SIZE_M = 40;   %plot square dimentions (meters)
+ENABLE_FULL_TRANSFORMATION = 0; %if this is set to 0, the tranformation to allign estimated positions with the ground truth is rotation+reflection+traslation otherwise also the scaling is done
 
 % RSSI to m conversion parameters
 k_TF_1= [-16.0845];
