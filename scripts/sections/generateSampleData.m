@@ -6,7 +6,7 @@ fixedNodeNo = 0;
 figure(1)
 %plot(fixedNodesPositionXY(1,2), fixedNodesPositionXY(1,3),'o')
 plot(1000,1000);
-axis([-SQUARE_SIZE_M/2, SQUARE_SIZE_M/2, -SQUARE_SIZE_M/2, SQUARE_SIZE_M/2]);
+axis([-1, SQUARE_SIZE_M-1, -1, SQUARE_SIZE_M-1]);
 grid on;
 
 fprintf('Insert new nodes by clicking on image (right click to stop)\n');
@@ -20,7 +20,7 @@ while button == 1
             fixedNodesPositionXY = [fixedNodesPositionXY(1:fixedNodeNo,:);[firstNodeId+fixedNodeNo , x , y]];
         end
         plot(fixedNodesPositionXY(1:fixedNodeNo+1,2), fixedNodesPositionXY(1:fixedNodeNo+1,3),'o');
-        axis([-SQUARE_SIZE_M/2, SQUARE_SIZE_M/2, -SQUARE_SIZE_M/2, SQUARE_SIZE_M/2]);
+        axis([-1, SQUARE_SIZE_M-1, -1, SQUARE_SIZE_M-1]);
         grid on;
         fixedNodeNo = fixedNodeNo+1;
     end

@@ -6,21 +6,20 @@ FOCUS_ID_1 = 0;
 FOCUS_ID_2 = 0;
 PLOT_NODE_LABELS = 0;
 LAYOUT_ALGORITHM = 2;
-CENTER_ON_ID = 100;
-NOISE_AMPL_dBm = 8;
+CENTER_ON_ID = 1;
+NOISE_AMPL_dBm = 0;
 F_filt = 0; %filter cut off frequency [Hz]. Set this to 0 to disable filtering.
 n_filt = 2;
 TREAT_AS_STATIC = 0; %when this is set to 1 the link length signals are averaged over the whole test (ignoring Infs)
-
-SQUARE_SIZE_M = 40;   %plot square dimentions (meters)
-k_TF_1= [-16.0845];
-txPwr_10m_1 = -57.9715;
+SQUARE_SIZE_M = 11;   %plot square dimentions (meters)
+k_TF_1= [-21.4013];
+txPwr_10m_1 = -67.3449;
 
 warning('off','optim:fminunc:SwitchingMethod');
 
-firstNodeId = 100;
-duration_s = 1;
-Ts = 0.1;
+firstNodeId = 1;
+duration_s = 90;
+Ts = 1;
 t_w = 0:Ts:duration_s;
 
 winc_sec = Ts;

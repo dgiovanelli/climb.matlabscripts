@@ -1,5 +1,5 @@
-clear all;
-close all;
+%clear all;
+%close all;
 %clc;
 
 FOCUS_ID_1 = 0;
@@ -13,23 +13,23 @@ else
 end
 ANDROID = 1; %set this to 1 if the log has been performed with the android app
 SHOW_BATTERY_VOLTAGE = 0; %if this is set to 1 the battery voltage info are plotted (and the packet counter info are discarded)
-PLOT_NODE_LABELS = 1; %setting this to 1 node labels are removed from plot, and the master node is plotted in red
+PLOT_NODE_LABELS = 0; %setting this to 1 node labels are removed from plot, and the master node is plotted in red
 CENTER_ON_ID = 1; %the plot will be centered on this node. Set to zero to free layouts
 LAYOUT_ALGORITHM = 2; %select the algorithm to use ( 0 -> neato, 1 -> MDS, 2 -> Mesh relaxation
-wsize_sec = 15;
-winc_sec = 10;
+wsize_sec = 2;
+winc_sec = 0.1;
 F_filt = 0; %filter cut off frequency [Hz]. Set this to 0 to disable filtering.
 n_filt = 2;
-TREAT_AS_STATIC = 1; %when this is set to 1 the link length signals are averaged over the whole test (ignoring Infs)
+TREAT_AS_STATIC = 0; %when this is set to 1 the link length signals are averaged over the whole test (ignoring Infs)
 SQUARE_SIZE_M = 40;   %plot square dimentions (meters)
 ENABLE_FULL_TRANSFORMATION = 0; %if this is set to 0, the tranformation to allign estimated positions with the ground truth is rotation+reflection+traslation otherwise also the scaling is done
 
 % RSSI to m conversion parameters
-k_TF_1= [-16.0845];
-txPwr_10m_1 = -57.9715;
+k_TF_1= [-15.0339];
+txPwr_10m_1 = -61.8643;
 
 %filename = 'D:\Drive\E3DA Shared\Tirocini&Tesi\Stage Superiori giu-2016\CLIMB\LOGS\TEST_MUSE_2016_6_16\DATA\log_168_11.13.26.txt';
-filename = 'D:\Drive\CLIMB\WIRELESS\LOG\LOCALIZATION\MUSE_02_08_2016\LOGS\log_215_11.37.0.txt';
+filename = 'D:\Drive\CLIMB\WIRELESS\LOG\LOCALIZATION\MUSE_02_08_2016\LOGS\log_215_11.37.0_CUT.txt';
 
 delimiter = ' ';
 CHECK_FOR_NOT_INCREMENTED_COUNTER = 1;

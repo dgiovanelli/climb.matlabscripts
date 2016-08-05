@@ -102,8 +102,11 @@ RSSI_MATRIX = -Inf*double(ones(AMOUNT_OF_NODE+1,AMOUNT_OF_NODE+1,length(ADV_DATA
 str = [];
 nextPercentPlotIndex = 0;
 timeSampleNo=1;
-initialOffset = TAG_DATA.TIMESTAMP.TIME_TICKS(1);
-
+if size(TAG_DATA.TIMESTAMP.TIME_TICKS,1)
+    initialOffset = TAG_DATA.TIMESTAMP.TIME_TICKS(1);
+else
+    initialOffset = 0;
+end
 %%ADV DATA
 for lineNo = 1:1:length(ADV_DATA.TIMESTAMP.TIME_TICKS)
     if strcmp(ADV_DATA.SOURCE.NAME{lineNo},'CLIMBC'); %ONLY CHILD NODES ADV DATA IS ANALYZED HERE

@@ -164,7 +164,8 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
     end
 end
 
-t_zero = T_TAG(2);%min([T_TAG(15);T_id_1]);
+
+t_zero = min([T_TAG;t_w]);
 T_TAG = T_TAG - t_zero;
 t_w = t_w - double(t_zero);
 

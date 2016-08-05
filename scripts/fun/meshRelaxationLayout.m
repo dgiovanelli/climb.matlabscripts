@@ -1,8 +1,8 @@
 function nodePositionXY = meshRelaxationLayout(edegesLength, links, unreliablility ,startingPos)
 
 epsilon_D_energy = 0.00001; %this is used when the stop condition is on the slope of energy associated to one node
-epsilon_d_movement = 0.1;  %this is used when the stop condition is on the minimum movement of the node
-MAX_ITER = 2000;
+epsilon_d_movement = 0.01;  %this is used when the stop condition is on the minimum movement of the node
+MAX_ITER = 5000;
 iteractions = 0;
 k_spring_default = 10;
 
@@ -96,16 +96,16 @@ while d > epsilon_d_movement && iteractions < MAX_ITER
 
     iteractions = iteractions + 1; 
 end
-iteractions
+%iteractions
 if iteractions >= MAX_ITER
     warning('Loop stopped, MAX_ITER reached!');
 end
 
 % options = optimset('Display','notify');
-%springEnergyCost_an = @(x)springEnergyCost( x, distanceMatrix, k_springs );
-%[nodePositionXY,~] = fminunc(springEnergyCost_an,nodePositionXY,options);
-% options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true,'Display','notify');
-% [nodePositionXY,fval] = fminunc(springEnergyCost_an,nodePositionXY,options); %Providing gradient function decrease performance in some cases ....
+% springEnergyCost_an = @(x)springEnergyCost( x, distanceMatrix, k_springs );
+% [nodePositionXY,~] = fminunc(springEnergyCost_an,nodePositionXY,options);
+%options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true,'Display','notify');
+%[nodePositionXY,fval] = fminunc(springEnergyCost_an,nodePositionXY,options); %Providing gradient function decrease performance in some cases ....
 
 nodePositionXY = [nodesList , nodePositionXY(:,1:2)];
 
