@@ -57,7 +57,7 @@ fprintf('AverageError for all nodes for the whole duration: %.2f m\n',mean(meanP
 %% PLOTTING AND EXPORTING NODES LAYOUT
 figure(215)
 filename = '../output/output_Animation_sampleData.gif';
-fps = 1/Ts*5;
+fps = 1/winc_sec*5;
 colorlist2 = hsv( size( nodePositionXY_transform,1) );
 squareDim = SQUARE_SIZE_M/2;
 for timeIndexNo = xstart_index : xstop_index
@@ -91,7 +91,7 @@ for timeIndexNo = xstart_index : xstop_index
             nodesOutsideSquare = nodesOutsideSquare + 1;
         end
     end
-    str = sprintf('Time = %.0f\n %d nodes inside the sqare\n %d nodes outside the square',(xstart_index+timeIndexNo)*Ts,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
+    str = sprintf('Time = %.0f\n %d nodes inside the sqare\n %d nodes outside the square',(xstart_index+timeIndexNo)*winc_sec,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
     text(-squareDim+squareDim*0.1,squareDim-squareDim*0.2,str,'FontSize',10,'FontWeight','bold');
     axis([-squareDim squareDim -squareDim squareDim]);
     
