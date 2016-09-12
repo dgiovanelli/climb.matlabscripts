@@ -91,7 +91,7 @@ end
 
 %% CALCULATE LINKS  AND OTHERS VARIABLES NEEDED FOR THE LAYOUT
 links = [];
-graphEdeges_m = [];
+graphEdeges_m_GroundTh = [];
 for nodeNo_1 = 1:size(nodePositionXY_GroundTh,1)-1
     for nodeNo_2 = nodeNo_1+1:size(nodePositionXY_GroundTh,1)
         graphEdeges_m_link = [];
@@ -100,9 +100,10 @@ for nodeNo_1 = 1:size(nodePositionXY_GroundTh,1)-1
             d = sqrt( (nodePositionXY_GroundTh(nodeNo_2,2,timeIndexNo) - nodePositionXY_GroundTh(nodeNo_1,2,timeIndexNo))^2 + (nodePositionXY_GroundTh(nodeNo_2,3,timeIndexNo) - nodePositionXY_GroundTh(nodeNo_1,3,timeIndexNo))^2 );
             graphEdeges_m_link = cat(1,graphEdeges_m_link,d);
         end
-        graphEdeges_m =  cat(2,graphEdeges_m,graphEdeges_m_link);
+        graphEdeges_m_GroundTh =  cat(2,graphEdeges_m_GroundTh,graphEdeges_m_link);
     end
 end
+graphEdeges_m = graphEdeges_m_GroundTh;
 LINKS_UNRELIABLITY = zeros(size(t_w,2),size(links,2));
 AVAILABLE_IDs = nodePositionXY_GroundTh(:,1,1);
 

@@ -40,11 +40,11 @@ for linkNo = 1 : size(links,2)
     distanceMatrix(pos1, pos2) = edegesLength(linkNo);
     distanceMatrix(pos2, pos1) = edegesLength(linkNo);
     
-    %k_springs(pos1, pos2) = 1/edegesLength(linkNo).^2;
-    %k_springs(pos2, pos1) = 1/edegesLength(linkNo).^2;
+%     k_springs(pos1, pos2) = k_springs(pos1, pos2)/(edegesLength(linkNo).^2);
+%     k_springs(pos2, pos1) = k_springs(pos1, pos2)/(edegesLength(linkNo).^2);
     
-    k_springs(pos1, pos2) = k_springs(pos1, pos2)/unreliablility(linkNo);
-    k_springs(pos2, pos1) = k_springs(pos2, pos1)/unreliablility(linkNo);
+    k_springs(pos1, pos2) = k_springs(pos1, pos2)/(unreliablility(linkNo).^4);
+    k_springs(pos2, pos1) = k_springs(pos2, pos1)/(unreliablility(linkNo).^4);
 end
 
 %while Dm_max_value > epsilon && iteractions < MAX_ITER

@@ -1,4 +1,5 @@
-function El= springEnergyCost( XY ,distanceMatrix, k_springs )
+%function El= springEnergyCost( XY ,distanceMatrix, k_springs )
+function[El,g]= springEnergyCost( XY ,distanceMatrix, k_springs )
 %Providing gradient function decrease performance in some cases .... [El,g]= springEnergyCost( XY ,distanceMatrix, k_springs )
 El = 0;
 

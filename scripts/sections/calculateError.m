@@ -11,6 +11,8 @@ if ENABLE_FREE_TRANSFORMATION
 else
     A_store = zeros(2,2,size(nodePositionXY,3));
 end
+link_length_mi_error = zeros(6,size(links,2),size(nodePositionXY_transform,3));
+
 %A_store = zeros(1,1,size(nodePositionXY,3));
 if xstop_index > size(nodePositionXY_GroundTh,3)
     xstop_index = size(nodePositionXY_GroundTh,3);
@@ -50,9 +52,48 @@ for timeNo = xstart_index : xstop_index
         end
         
     end
+    
+    linkNo_link_length_mi_error = 1;
+    for nodeNo_m_GT = 1:size(nodePositionXY_GroundTh(:,:,1),1)-1
+        nodeNo_m_LAY = find(nodePositionXY_transform(:,1,timeNo-xstart_index+1) == nodePositionXY_GroundTh(nodeNo_m_GT,1,timeNo-xstart_index+1));
+        if length(nodeNo_m_LAY) == 1
+            for nodeNo_i_GT = nodeNo_m_GT+1:size(nodePositionXY_GroundTh(:,:,1),1)
+                nodeNo_i_LAY = find(nodePositionXY_transform(:,1,timeNo-xstart_index+1) == nodePositionXY_GroundTh(nodeNo_i_GT,1,timeNo-xstart_index+1));
+                if length(nodeNo_i_LAY) == 1
+                    link_length_mi_GT = sqrt( (nodePositionXY_GroundTh(nodeNo_m_GT,2,timeNo-xstart_index+1)-nodePositionXY_GroundTh(nodeNo_i_GT,2,timeNo-xstart_index+1))^2 + (nodePositionXY_GroundTh(nodeNo_m_GT,3,timeNo-xstart_index+1)-nodePositionXY_GroundTh(nodeNo_i_GT,3,timeNo-xstart_index+1))^2 );
+                    link_length_mi_LAY = sqrt( (nodePositionXY_transform(nodeNo_m_LAY,2,timeNo-xstart_index+1)-nodePositionXY_transform(nodeNo_i_LAY,2,timeNo-xstart_index+1))^2 + (nodePositionXY_transform(nodeNo_m_LAY,3,timeNo-xstart_index+1)-nodePositionXY_transform(nodeNo_i_LAY,3,timeNo-xstart_index+1))^2 );
+                    
+                    linkNo_ACQ = find((links(1,:) == nodePositionXY_GroundTh(nodeNo_m_GT,1,timeNo-xstart_index+1)) & (links(2,:) == nodePositionXY_GroundTh(nodeNo_i_GT,1,timeNo-xstart_index+1)) | (links(2,:) == nodePositionXY_GroundTh(nodeNo_m_GT,1,timeNo-xstart_index+1)) & (links(1,:) == nodePositionXY_GroundTh(nodeNo_i_GT,1,timeNo-xstart_index+1)));
+                    if length(linkNo_ACQ) == 1
+                        link_length_mi_ACQ = graphEdeges_m_filt(timeNo-xstart_index+1,linkNo_ACQ);
+                        link_length_mi_error(5, linkNo_link_length_mi_error, timeNo-xstart_index+1) = link_length_mi_ACQ - link_length_mi_GT;
+                        link_length_mi_error(6, linkNo_link_length_mi_error, timeNo-xstart_index+1) = (link_length_mi_ACQ - link_length_mi_GT)/link_length_mi_GT;
+                    else
+                        warning('The same link has been found twice in graphEdeges_m_filt or it is not present');
+                    end
+                    
+                    link_length_mi_error(3, linkNo_link_length_mi_error, timeNo-xstart_index+1) = link_length_mi_LAY - link_length_mi_GT;
+                    link_length_mi_error(4, linkNo_link_length_mi_error, timeNo-xstart_index+1) = (link_length_mi_LAY - link_length_mi_GT)/link_length_mi_GT;
+                    link_length_mi_error(1, linkNo_link_length_mi_error, timeNo-xstart_index+1) = nodePositionXY_GroundTh(nodeNo_m_GT,1,timeNo-xstart_index+1);
+                    link_length_mi_error(2, linkNo_link_length_mi_error, timeNo-xstart_index+1) = nodePositionXY_GroundTh(nodeNo_i_GT,1,timeNo-xstart_index+1);
+                    linkNo_link_length_mi_error = linkNo_link_length_mi_error + 1;
+                else
+                    warning('A node is missing from nodePositionXY or is repeated more than once');
+                end
+            end
+        else
+            warning('A node is missing from nodePositionXY or is repeated more than once');
+        end
+    end
+    
 end
 
-fprintf('AverageError for all nodes for the whole duration: %.2f m\n',mean(meanPositioningError,1));
+fprintf('Error for all nodes for the whole duration (method 1 - position based): %.2f m\n',mean(meanPositioningError,1));
+fprintf('Error for all nodes for the whole duration (method 2 - link length based): %.2f m, or %.2f percent\n',mean(mean(link_length_mi_error(3,:,1:xstop_index-xstart_index+1))),100*mean(mean(link_length_mi_error(4,:,1:xstop_index-xstart_index+1))));
+fprintf('Link length error prior localization: %.2f m, or %.2f percent\n',mean(mean(link_length_mi_error(5,:,1:xstop_index-xstart_index+1))),100*mean(mean(link_length_mi_error(6,:,1:xstop_index-xstart_index+1))));
+
+%uncomment the next line to see the error ditribution (only for methode 2)
+%hist(reshape(link_length_mi_error(3,:,1:xstop_index-xstart_index+1),[numel(link_length_mi_error(3,:,1:xstop_index-xstart_index+1)),1]));
 
 %% PLOTTING AND EXPORTING NODES LAYOUT
 figure(215)

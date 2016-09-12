@@ -1,13 +1,13 @@
-figure(200)
-plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m_filt,  t_w*TICK_DURATION, graphEdeges_m );
-xlabel('Time [s]');
-ylabel('distance [m]');
-legend('TAGs','distance');
-title('All links');
-grid on;
-hold off;
-
 if TREAT_AS_STATIC == 0
+    figure(200)
+    plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m_filt);
+    xlabel('Time [s]');
+    ylabel('distance [m]');
+    legend('TAGs','distance');
+    title('All links');
+    grid on;
+    hold off;
+    
     fprintf('Click on the analysis bounds!\n');
     [x1,~] = ginput(1);
     [x2,~] = ginput(1);
@@ -25,7 +25,7 @@ if TREAT_AS_STATIC == 0
     [ ~ , xstop_index] = min(tmp);
 else
     xstart_index = 1;
-    xstop_index = size(graphEdeges_m_filt,1);
+    xstop_index = 1;
 end
  
 %% CALCULATING NODES LAYOUT
@@ -95,10 +95,10 @@ for timeIndexNo = xstart_index : xstop_index
         case 2 % Use mesh relaxation for placing nodes
                   
             if timeIndexNo == xstart_index
-                nodePositionXY(:,:,timeIndexNo_for_nodePositionXY) = meshRelaxationLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),[]); %1+LINKS_UNRELIABLITY(timeIndexNo,:) is because LINKS_UNRELIABLITY is zero if the link is reliable, inside createDOTdescriptionFile the spring constant is calculated with 1/LINKS_UNRELIABLITY(...). If LINKS_UNRELIABLITY(...) == 0 the constant will be Inf...
+                nodePositionXY(:,:,timeIndexNo_for_nodePositionXY) = meshRelaxationLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),[],ENABLE_HIGH_PRECISION_ON_MESH_RELAXATION); %1+LINKS_UNRELIABLITY(timeIndexNo,:) is because LINKS_UNRELIABLITY is zero if the link is reliable, inside createDOTdescriptionFile the spring constant is calculated with 1/LINKS_UNRELIABLITY(...). If LINKS_UNRELIABLITY(...) == 0 the constant will be Inf...
                 k_center_id = find(nodePositionXY(:,1,1) == CENTER_ON_ID);
             else
-                nodePositionXY(:,:,timeIndexNo_for_nodePositionXY) = meshRelaxationLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY-1));
+                nodePositionXY(:,:,timeIndexNo_for_nodePositionXY) = meshRelaxationLayout(graphEdeges_m_filt(timeIndexNo,:), links, 1+LINKS_UNRELIABLITY(timeIndexNo,:),nodePositionXY(:,2:3,timeIndexNo_for_nodePositionXY-1),ENABLE_HIGH_PRECISION_ON_MESH_RELAXATION);
             end
             
             if size(k_center_id,1) == 1

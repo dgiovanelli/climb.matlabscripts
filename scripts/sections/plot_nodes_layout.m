@@ -1,7 +1,7 @@
 %% PLOTTING AND EXPORTING NODES LAYOUT
 figure(205)
 filename = '../output/output_Animation.gif';
-fps = 1/winc_sec*5;
+fps = 1/winc_sec*3;
 colorlist2 = hsv( size(nodePositionXY,1) );
 squareDim = SQUARE_SIZE_M/2;
 for timeIndexNo = 1 : size(nodePositionXY,3)
@@ -11,8 +11,8 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
     masterNodePositionXY_temp = nodePositionXY_temp(nodePositionXY_temp(:,1)==254,:);
     focusNodesPositionXY_temp = nodePositionXY_temp(nodePositionXY_temp(:,1)==FOCUS_ID_1 | nodePositionXY_temp(:,1)==FOCUS_ID_2,:);
     plot(regularNodesPositionXY_temp(:,2),regularNodesPositionXY_temp(:,3),'bo',masterNodePositionXY_temp(:,2),masterNodePositionXY_temp(:,3),'ro',focusNodesPositionXY_temp(:,2),focusNodesPositionXY_temp(:,3),'go','LineWidth',3);
-    xlabel('[m]?');
-    ylabel('[m]?');
+    xlabel('[m]');
+    ylabel('[m]');
     grid on;
     for nodeNo = 1 : size(nodePositionXY_temp,1)
         if PLOT_NODE_LABELS == 1

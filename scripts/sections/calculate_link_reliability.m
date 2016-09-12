@@ -1,7 +1,7 @@
 %LINK RELIABILITY
 fprintf('LINKS RELIABILITY CHECK:\n');
-LINKS_UNRELIABLITY = zeros(size(graphEdeges_m));
-for i_link_1=1:size(graphEdeges_m,2) %scan all links and evaluate all possible 'triangles'.
+LINKS_UNRELIABLITY = zeros(size(graphEdeges_m_filt));
+for i_link_1=1:size(graphEdeges_m_filt,2) %scan all links and evaluate all possible 'triangles'.
     
     id_1 = links(1,i_link_1);
     id_2_temp = links(2,links(1,:)==id_1);
@@ -13,17 +13,17 @@ for i_link_1=1:size(graphEdeges_m,2) %scan all links and evaluate all possible '
         
         if(size(i_link_3) == 1 )
             
-            for timeIndexNo = 1:size(graphEdeges_m,1)
-                if (graphEdeges_m(timeIndexNo,i_link_1)~=Inf) && (graphEdeges_m(timeIndexNo,i_link_2)~=Inf) && (graphEdeges_m(timeIndexNo,i_link_3)~=Inf)
-                    if graphEdeges_m(timeIndexNo,i_link_1) + graphEdeges_m(timeIndexNo,i_link_2) <  0.8*graphEdeges_m(timeIndexNo,i_link_3)
+            for timeIndexNo = 1:size(graphEdeges_m_filt,1)
+                if (graphEdeges_m_filt(timeIndexNo,i_link_1)~=Inf) && (graphEdeges_m_filt(timeIndexNo,i_link_2)~=Inf) && (graphEdeges_m_filt(timeIndexNo,i_link_3)~=Inf)
+                    if graphEdeges_m_filt(timeIndexNo,i_link_1) + graphEdeges_m_filt(timeIndexNo,i_link_2) <  0.8*graphEdeges_m_filt(timeIndexNo,i_link_3)
                         %links(i_link_3) -> unreliable
                         LINKS_UNRELIABLITY(timeIndexNo,i_link_3) = LINKS_UNRELIABLITY(timeIndexNo,i_link_3) + 1;
                     end
-                    if graphEdeges_m(timeIndexNo,i_link_2) + graphEdeges_m(timeIndexNo,i_link_3) <  0.8*graphEdeges_m(timeIndexNo,i_link_1)
+                    if graphEdeges_m_filt(timeIndexNo,i_link_2) + graphEdeges_m_filt(timeIndexNo,i_link_3) <  0.8*graphEdeges_m_filt(timeIndexNo,i_link_1)
                         %links(i_link_1) -> unreliable
                         LINKS_UNRELIABLITY(timeIndexNo,i_link_1) = LINKS_UNRELIABLITY(timeIndexNo,i_link_1) + 1;
                     end
-                    if graphEdeges_m(timeIndexNo,i_link_3) + graphEdeges_m(timeIndexNo,i_link_1) <  0.8*graphEdeges_m(timeIndexNo,i_link_2)
+                    if graphEdeges_m_filt(timeIndexNo,i_link_3) + graphEdeges_m_filt(timeIndexNo,i_link_1) <  0.8*graphEdeges_m_filt(timeIndexNo,i_link_2)
                         %links(i_link_2) -> unreliable
                         LINKS_UNRELIABLITY(timeIndexNo,i_link_2) = LINKS_UNRELIABLITY(timeIndexNo,i_link_2) + 1;
                     end
