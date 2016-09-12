@@ -41,7 +41,7 @@ for timeNo = xstart_index : xstop_index
         %nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1) = ([-cos(A) , sin(A); sin(A),cos(A)]*nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1)')';
         if ENABLE_FREE_TRANSFORMATION
             nodePositionXY_transform(nodeNo,2:3,timeNo-xstart_index+1) = ((A(1:2,1:2)*nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1)')+ A(3,:)')';
-        else
+        else %only rotation/reflection/translation are allowed
             if A(1,2) > 0
                 nodePositionXY_transform(nodeNo,2:3,timeNo-xstart_index+1) = ([cos(2*A(1,1)) , sin(2*A(1,1)); sin(2*A(1,1)),-cos(2*A(1,1))]*nodePositionXY(nodeNo,2:3,timeNo-xstart_index+1)')- A(2,:)';
             else

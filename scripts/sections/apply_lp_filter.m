@@ -3,7 +3,7 @@
 if TREAT_AS_STATIC == 1
     graphEdeges_m_filt = graphEdeges_m;
     for i_link=1:size(graphEdeges_m,2)
-        graphEdeges_m_filt(:,i_link) = ones(size(graphEdeges_m_filt,1),1).*mean(graphEdeges_m(graphEdeges_m(:,i_link) ~= Inf , i_link));
+        graphEdeges_m_filt(:,i_link) = ones(size(graphEdeges_m_filt,1),1).*mean(graphEdeges_m(graphEdeges_m(:,i_link) ~= Inf & ~isnan(graphEdeges_m(:,i_link)) , i_link));
     end
 else
     if F_filt ~= 0

@@ -72,7 +72,7 @@ while d > epsilon_d_movement && iteractions < MAX_ITER
     
     for nodeNo_i = 1:nodesAmount
         if nodeNo_i ~= Dm_max_index
-            if distanceMatrix(Dm_max_index, nodeNo_i) ~= Inf
+            if distanceMatrix(Dm_max_index, nodeNo_i) ~= Inf && ~isnan(distanceMatrix(Dm_max_index, nodeNo_i))
                 dmi_x = nodePositionXY(Dm_max_index,1) - nodePositionXY(nodeNo_i,1);
                 dmi_y = nodePositionXY(Dm_max_index,2) - nodePositionXY(nodeNo_i,2);
                 dmi_x_square = dmi_x.^2;
@@ -93,13 +93,14 @@ while d > epsilon_d_movement && iteractions < MAX_ITER
         end
     end
     
-    X = linsolve(A,B);
-    dx = X(1);
-    dy = X(2);
-    d = sqrt(dx^2 + dy^2);
+    if any(any(A))
+        X = linsolve(A,B);
+        dx = X(1);
+        dy = X(2);
+        d = sqrt(dx^2 + dy^2);
     
-    nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [dx,dy];
-
+        nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [dx,dy];
+    end
     iteractions = iteractions + 1; 
 end
 %iteractions
