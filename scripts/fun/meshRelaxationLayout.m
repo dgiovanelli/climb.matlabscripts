@@ -1,10 +1,16 @@
-function nodePositionXY = meshRelaxationLayout(edegesLength, links, unreliablility ,startingPos)
+function nodePositionXY = meshRelaxationLayout(edegesLength, links, unreliablility ,startingPos, high_precision)
 
-epsilon_D_energy = 0.00001; %this is used when the stop condition is on the slope of energy associated to one node
-epsilon_d_movement = 0.01;  %this is used when the stop condition is on the minimum movement of the node
-MAX_ITER = 5000;
+if high_precision ~= 0
+    epsilon_D_energy = 0.00001; %this is used when the stop condition is on the slope of energy associated to one node
+    epsilon_d_movement = 0.01;  %this is used when the stop condition is on the minimum movement of the node
+    MAX_ITER = 5000;
+else
+    epsilon_D_energy = 0.001; %this is used when the stop condition is on the slope of energy associated to one node
+    epsilon_d_movement = 0.1;  %this is used when the stop condition is on the minimum movement of the node
+    MAX_ITER = 1000;
+end
 iteractions = 0;
-k_spring_default = 10;
+k_spring_default = 100;
 
 nodesList = unique( links );
 nodesAmount = size(nodesList,1);
@@ -101,13 +107,16 @@ if iteractions >= MAX_ITER
     warning('Loop stopped, MAX_ITER reached!');
 end
 
-% options = optimset('Display','notify');
-% springEnergyCost_an = @(x)springEnergyCost( x, distanceMatrix, k_springs );
-% [nodePositionXY,~] = fminunc(springEnergyCost_an,nodePositionXY,options);
-%options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true,'Display','notify');
-%[nodePositionXY,fval] = fminunc(springEnergyCost_an,nodePositionXY,options); %Providing gradient function decrease performance in some cases ....
-
+if high_precision ~= 0
+    springEnergyCost_an = @(x)springEnergyCost( x, distanceMatrix, k_springs );
+    
+    %USE THE FOLLOWING TWO LINES IF THE GRADIENT IS NOT PROVIDED INSIDE springEnergyCost
+    %options = optimset('Display','notify');
+    %[nodePositionXY,~] = fminunc(springEnergyCost_an,nodePositionXY,options);
+    %INSTEAD USE THE FOLLOWING TWO LINES IF THE GRADIENT IS PROVIDED INSIDE springEnergyCost
+    options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true,'Display','notify');
+    [nodePositionXY,fval] = fminunc(springEnergyCost_an,nodePositionXY,options); %Providing gradient function decrease performance in some cases ....
+end
 nodePositionXY = [nodesList , nodePositionXY(:,1:2)];
-
 end
 
