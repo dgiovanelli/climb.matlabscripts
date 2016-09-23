@@ -27,8 +27,8 @@ ENABLE_HIGH_PRECISION_ON_MESH_RELAXATION = 1; % when this is set to 0 the 'secon
 
 PLOT_VERBOSITY = 3;
 % RSSI to m conversion parameters
-k_TF_1= [22];%[-15.0339]; %[22]
-txPwr_10m_1 = -61.8643;%-61.8643;
+k_TF_1= [-21.4013];%[-15.0339]; %[22]
+txPwr_10m_1 = -67.3449;%-61.8643;
 
 filename = 'D:\Drive\CLIMB\WIRELESS\LOG\TEST_FBK\LOGS\19_02_16\log_50_10.49.29.txt';
 %filename = 'D:\Drive\CLIMB\WIRELESS\LOG\LOCALIZATION\MUSE_02_08_2016\LOGS\log_215_11.37.0_CUT.txt';

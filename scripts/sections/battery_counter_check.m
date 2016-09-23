@@ -94,7 +94,7 @@ else    %% PACKET CHECK
     end
     fprintf('Done!\n\n');
     
-    fprintf('PACKET CHECK STATISTICS:\n');
+    fprintf('PACKET CHECK STATISTICS (ONLY FOR ADV DATA!!):\n');
     fprintf('Node ID | received packets | missing packets | PEr\n');
     for nodeNo = 1 : size(packetStat,1)
         fprintf('%02X      | %d               | %d              | %.2f %%\n',packetStat(nodeNo,1), packetStat(nodeNo,2), packetStat(nodeNo,3) ,  packetStat(nodeNo,3) / (packetStat(nodeNo,2) + packetStat(nodeNo,3))*100 );

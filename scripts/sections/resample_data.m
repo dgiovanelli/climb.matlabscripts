@@ -20,7 +20,7 @@ emptySignalsCount = 0;
 signalsCount = 0;
 nextPercentPlotIndex = 0;
 str = [];
-fprintf('REORDERING LINKS:\n');
+fprintf('RESAMPLIG DATA LINKS:\n');
 for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
     for i_id_2 = i_id_1+1:size(RSSI_MATRIX,2)
         T_2to1 = double.empty;
