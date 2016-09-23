@@ -25,6 +25,7 @@ SQUARE_SIZE_M = 200;   %plot square dimentions (meters)
 ENABLE_FREE_TRANSFORMATION = 0; %if this is set to 0, the tranformation to allign estimated positions with the ground truth is rotation+reflection+traslation otherwise also the scaling is done
 ENABLE_HIGH_PRECISION_ON_MESH_RELAXATION = 1; % when this is set to 0 the 'second' phase in mesh relaxation is skipped
 
+PLOT_VERBOSITY = 3;
 % RSSI to m conversion parameters
 k_TF_1= [22];%[-15.0339]; %[22]
 txPwr_10m_1 = -61.8643;%-61.8643;

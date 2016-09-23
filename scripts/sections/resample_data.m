@@ -52,18 +52,22 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
             if ~isempty(RSSI_Signal_W)
                 if (isempty(T_2to1) + isempty(T_1to2)) == 0 % both are non empty
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min([ T_2to1',T_1to2' ])) )';
-                    legendStrs = {'merged-filtered-resampled','raw 2to1','raw 1to2'};
+                    legend2to1Str = sprintf('raw 0x%02x to 0x%02x',RSSI_MATRIX(i_id_2,1,1),RSSI_MATRIX(i_id_1,1,1) );
+                    legend1to2Str = sprintf('raw 0x%02x to 0x%02x',RSSI_MATRIX(i_id_1,1,1),RSSI_MATRIX(i_id_2,1,1) );
+                    legendStrs = {'merged-filtered-resampled',legend2to1Str,legend1to2Str};
                 elseif isempty(T_1to2)
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_2to1)) )';
-                    legendStrs = {'merged-filtered-resampled','raw 2to1'};
+                    legend2to1Str = sprintf('raw 0x%02x to 0x%02x',RSSI_MATRIX(i_id_2,1,1),RSSI_MATRIX(i_id_1,1,1) );
+                    legendStrs = {'merged-filtered-resampled',legend2to1Str};
                 else % T_2to1 is empty
                     T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_1to2)) )';
-                    legendStrs = {'merged-filtered-resampled','raw 1to2'};
+                    legend1to2Str = sprintf('raw 0x%02x to 0x%02x',RSSI_MATRIX(i_id_1,1,1),RSSI_MATRIX(i_id_2,1,1) );
+                    legendStrs = {'merged-filtered-resampled',legend1to2Str};
                 end
                 % PLOT FOCUS IDS RSSI IF ANY
-                if(focusId1 == i_id_1 && focusId2 == i_id_2) || (focusId1 == i_id_2 && focusId2 == i_id_1)
+                if( (focusId1 == RSSI_MATRIX(i_id_1,1,1) && focusId2 == RSSI_MATRIX(i_id_2,1,1)) || (focusId1 == RSSI_MATRIX(i_id_2,1,1) && focusId2 == RSSI_MATRIX(i_id_1,1,1)) || PLOT_VERBOSITY > 2)
                     figure;
-                    plot(T_W*TICK_DURATION,RSSI_Signal_W,T_2to1*TICK_DURATION,RSSI_Signal_2to1,'-.',T_1to2*TICK_DURATION,RSSI_Signal_1to2,'-.');
+                    plot(T_W*TICK_DURATION,RSSI_Signal_W,T_2to1*TICK_DURATION,RSSI_Signal_2to1,'.',T_1to2*TICK_DURATION,RSSI_Signal_1to2,'.');
                     legend(legendStrs);
                     hold off;
                     xlabel('Time [s]');
@@ -71,7 +75,7 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
                     grid on;
                     title('RSSI between FOCUS ID1 and FOCUS ID2');
                 end
-                
+                               
                 if isempty(t_w) %% this is run only once at the first iteration of the nested loops
                     graphEdeges_RSSI = RSSI_Signal_W;
                     t_w = T_W;
