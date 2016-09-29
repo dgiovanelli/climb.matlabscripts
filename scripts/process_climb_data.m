@@ -46,7 +46,7 @@ resample_data;
 
 dBm_to_m_conversion;
 
-%link_reconstruction;
+link_reconstruction; % non importantissima per il papero
 
 apply_lp_filter;
 
