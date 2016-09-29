@@ -14,6 +14,12 @@ else
         graphEdeges_m_filt = filter(b,a,graphEdeges_m); %apply the filter
         graphEdeges_m_filt(graphEdeges_m == Inf) = Inf; %Restore Infs to avoid introducing errors due to edge length underestimation
         graphEdeges_m_filt(isnan(graphEdeges_m)) = Inf; % This avoid NaNs that can be problematic during energy count
+        if PLOT_VERBOSITY > 1
+            figure
+            plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m_rec);
+            figure
+            plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m_filt);
+        end
     else
         graphEdeges_m_filt = graphEdeges_m;
     end
