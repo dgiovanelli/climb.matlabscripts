@@ -54,7 +54,11 @@ apply_lp_filter;
 
 calculate_link_reliability;
 
+recalculate_distance_matrix;
+
 layout_nodes;
+
+clustering_nodes;
 
 plot_nodes_layout;
 
