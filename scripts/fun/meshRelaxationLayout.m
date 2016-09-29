@@ -22,7 +22,7 @@ dEdy = zeros(nodesAmount);
 Dm = zeros(nodesAmount,1);
 if isempty(startingPos)
     nodePositionXY = rand(nodesAmount,2)*2-1;
-    r = 100*max(edegesLength(edegesLength ~= Inf)); %avoid Infs
+    r = 600;%100*max(edegesLength(edegesLength ~= Inf)); %avoid Infs
     deltaPhi_rad = (2*pi)/nodesAmount;
     for nodeNo = 1:nodesAmount
         nodePositionXY(nodeNo,:) = [r*sin(deltaPhi_rad*nodeNo), r*cos(deltaPhi_rad*nodeNo)];
