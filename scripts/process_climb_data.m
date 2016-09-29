@@ -44,7 +44,9 @@ battery_counter_check;
 
 resample_data;
 
-dBm_to_m_conversion;
+dBm_to_m_conversion; %cosa succede se questo viene messo prima di resample_data???? PROVARE!!
+
+cut_out_data_to_analyze;
 
 link_reconstruction; % non importantissima per il papero
 

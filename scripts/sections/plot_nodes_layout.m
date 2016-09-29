@@ -4,7 +4,12 @@ filename = '../output/output_Animation.gif';
 fps = 1/winc_sec*3;
 colorlist2 = hsv( size(nodePositionXY,1) );
 squareDim = SQUARE_SIZE_M/2;
-for timeIndexNo = 1 : size(nodePositionXY,3)
+if TREAT_AS_STATIC == 0
+    amountOfTimeSamples = size(nodePositionXY,3);
+else
+    amountOfTimeSamples = 1;
+end
+for timeIndexNo = 1 : amountOfTimeSamples
     nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
     nodesOutsideSquare = 0;
     regularNodesPositionXY_temp =  nodePositionXY_temp(nodePositionXY_temp(:,1)~=254 & nodePositionXY_temp(:,1)~=FOCUS_ID_1 & nodePositionXY_temp(:,1)~=FOCUS_ID_2,:);
@@ -23,7 +28,13 @@ for timeIndexNo = 1 : size(nodePositionXY,3)
             nodesOutsideSquare = nodesOutsideSquare + 1;
         end
     end
-    str = sprintf('Time = %.0f\n %d nodes inside the sqare\n %d nodes outside the square',(xstart_index+timeIndexNo)*winc_sec,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
+    hold off
+    
+    if TREAT_AS_STATIC == 0
+        str = sprintf('Time = %.0f\n %d nodes inside the sqare\n %d nodes outside the square',(start_selected_cut_index+timeIndexNo)*winc_sec,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
+    else
+        str = sprintf('%d nodes inside the sqare\n %d nodes outside the square',nodeNo-nodesOutsideSquare,nodesOutsideSquare);
+    end
     text(-squareDim+squareDim*0.1,squareDim-squareDim*0.2,str,'FontSize',10,'FontWeight','bold');
     axis([-squareDim squareDim -squareDim squareDim]);
     
