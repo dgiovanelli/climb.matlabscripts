@@ -27,6 +27,7 @@ if isempty(startingPos)
     for nodeNo = 1:nodesAmount
         nodePositionXY(nodeNo,:) = [r*sin(deltaPhi_rad*nodeNo), r*cos(deltaPhi_rad*nodeNo)];
     end
+    MAX_ITER = 100000;
 else
     nodePositionXY = startingPos;
 end
