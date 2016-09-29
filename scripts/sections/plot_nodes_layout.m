@@ -1,5 +1,6 @@
 %% PLOTTING AND EXPORTING NODES LAYOUT
-figure(205)
+h = figure(205);
+set(get(h,'Children'),'HitTest','off');
 filename = '../output/output_Animation.gif';
 fps = 1/winc_sec*3;
 colorlist2 = hsv( size(nodePositionXY,1) );
