@@ -26,6 +26,7 @@ ENABLE_FREE_TRANSFORMATION = 0; %if this is set to 0, the tranformation to allig
 ENABLE_HIGH_PRECISION_ON_MESH_RELAXATION = 1; % when this is set to 0 the 'second' phase in mesh relaxation is skipped
 
 PLOT_VERBOSITY = 3;
+ENABLE_LINK_RECONSTRUCTION = 0;
 % RSSI to m conversion parameters
 k_TF_1= [-21.4013];%[-15.0339]; %[22]
 txPwr_10m_1 = -67.3449;%-61.8643;
