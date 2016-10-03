@@ -39,6 +39,10 @@ calculate_link_reliability;
 
 layout_nodes;
 
+recalculate_distance_matrix;
+
+clustering_nodes;
+
 plot_nodes_layout;
 
 

@@ -5,7 +5,7 @@
 FOCUS_ID_1 = 0;
 FOCUS_ID_2 = 0;
 %IDs_TO_CONSIDER = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]; % set this to empty to select all IDs
-IDs_TO_CONSIDER = [];
+IDs_TO_CONSIDER = [];%1:1:22;
 if isempty(IDs_TO_CONSIDER) 
     AMOUNT_OF_NODE = 30;
 else
@@ -28,6 +28,11 @@ ENABLE_HIGH_PRECISION_ON_MESH_RELAXATION = 1; % when this is set to 0 the 'secon
 PLOT_VERBOSITY = 3;
 ENABLE_LINK_RECONSTRUCTION = 0;
 DECIMATION_AFTER_FILT_FACTOR = 10;
+GIF_SPEEDUP = 5;
+PLOT_VERBOSITY = 2;
+if PLOT_VERBOSITY > 2
+    warning('ATTENTION: setting PLOT_VERBOSITY > 2 could lead to large number of plots if dealing with large networks');
+end
 % RSSI to m conversion parameters
 k_TF_1= [-21.4013];%[-15.0339]; %[22]
 txPwr_10m_1 = -67.3449;%-61.8643;
@@ -55,11 +60,12 @@ link_reconstruction; % non importantissima per il papero
 apply_lp_filter;
 
 decimate_samples;
+
 calculate_link_reliability;
 
-recalculate_distance_matrix;
-
 layout_nodes;
+
+recalculate_distance_matrix;
 
 clustering_nodes;
 

@@ -11,11 +11,11 @@
 % Contact Info: sm.kalami@gmail.com, info@yarpiz.com
 %
 
-function [IDX, isnoise]=DBSCAN(D,epsilon,MinPts,n)
+function [IDX, isnoise]=DBSCAN(D,epsilon,MinPts)
 
     C=0;
     
-    %n=size(X,1);
+    n=size(D,1);
     IDX=zeros(n,1);
     
     %D=pdist2(X,X);
