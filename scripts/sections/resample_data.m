@@ -51,21 +51,31 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
             RSSI_Signal_W = timeBasedTwoDirectionsMerge(T_2to1, RSSI_Signal_2to1, T_1to2, RSSI_Signal_1to2, wsize, winc); %THIS MERGES RSSI DATA FROM BOTH DIRECTION AND RESAMPLE IT AT winc INTERVAL
             if ~isempty(RSSI_Signal_W)
                 if (isempty(T_2to1) + isempty(T_1to2)) == 0 % both are non empty
-                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min([ T_2to1',T_1to2' ])) )';
+                    T_W = ( (0:1:(size(RSSI_Signal_W,1)-1))*winc + winc/2 + double(min([ T_2to1',T_1to2' ])) )';
                     legend2to1Str = sprintf('raw 0x%02x to 0x%02x',RSSI_MATRIX(i_id_2,1,1),RSSI_MATRIX(i_id_1,1,1) );
                     legend1to2Str = sprintf('raw 0x%02x to 0x%02x',RSSI_MATRIX(i_id_1,1,1),RSSI_MATRIX(i_id_2,1,1) );
                     legendStrs = {'merged-filtered-resampled',legend2to1Str,legend1to2Str};
                 elseif isempty(T_1to2)
-                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_2to1)) )';
+                    T_W = ( (0:1:(size(RSSI_Signal_W,1)-1))*winc + winc/2 + double(min(T_2to1)) )';
                     legend2to1Str = sprintf('raw 0x%02x to 0x%02x',RSSI_MATRIX(i_id_2,1,1),RSSI_MATRIX(i_id_1,1,1) );
                     legendStrs = {'merged-filtered-resampled',legend2to1Str};
                 else % T_2to1 is empty
-                    T_W = ( (1:1:size(RSSI_Signal_W,1))*winc + double(min(T_1to2)) )';
+                    T_W = ( (0:1:(size(RSSI_Signal_W,1)-1))*winc + winc/2 + double(min(T_1to2)) )';
                     legend1to2Str = sprintf('raw 0x%02x to 0x%02x',RSSI_MATRIX(i_id_1,1,1),RSSI_MATRIX(i_id_2,1,1) );
                     legendStrs = {'merged-filtered-resampled',legend1to2Str};
                 end
                 % PLOT FOCUS IDS RSSI IF ANY
-                if( (focusId1 == RSSI_MATRIX(i_id_1,1,1) && focusId2 == RSSI_MATRIX(i_id_2,1,1)) || (focusId1 == RSSI_MATRIX(i_id_2,1,1) && focusId2 == RSSI_MATRIX(i_id_1,1,1)) || PLOT_VERBOSITY > 2)
+                if( (FOCUS_ID_1 == RSSI_MATRIX(i_id_1,1,1) && FOCUS_ID_2 == RSSI_MATRIX(i_id_2,1,1)) || (FOCUS_ID_1 == RSSI_MATRIX(i_id_2,1,1) && FOCUS_ID_2 == RSSI_MATRIX(i_id_1,1,1)))
+                    figure;
+                    plot(T_W*TICK_DURATION,RSSI_Signal_W,'.',T_2to1*TICK_DURATION,RSSI_Signal_2to1,'.',T_1to2*TICK_DURATION,RSSI_Signal_1to2,'.');
+                    legend(legendStrs);
+                    hold off;
+                    xlabel('Time [s]');
+                    ylabel('RSSI [dBm]');
+                    grid on;
+                    title('RSSI between FOCUS ID1 and FOCUS ID2');
+                end
+                if PLOT_VERBOSITY > 2
                     figure;
                     plot(T_W*TICK_DURATION,RSSI_Signal_W,T_2to1*TICK_DURATION,RSSI_Signal_2to1,'.',T_1to2*TICK_DURATION,RSSI_Signal_1to2,'.');
                     legend(legendStrs);
@@ -75,14 +85,13 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
                     grid on;
                     title('RSSI between FOCUS ID1 and FOCUS ID2');
                 end
-                               
                 if isempty(t_w) %% this is run only once at the first iteration of the nested loops
                     graphEdeges_RSSI = RSSI_Signal_W;
                     t_w = T_W;
                     %links = [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)];
                 else
-                    if ((min(t_w) - winc) >= min(T_W)) || (max(T_W) > (max(t_w) )) %%the T_W values are not contained within t_w
-                        if (min(t_w) - winc) >= min(T_W) %%the current T_2to1_W array starts before t_2to1 array
+                    if ((min(t_w) - winc/2) >= min(T_W)) || (max(T_W) > ( (max(t_w) + winc/2) )) %%the T_W values are not contained within t_w
+                        if (min(t_w) -  winc/2) >= min(T_W) %%the current T_2to1_W array starts before t_2to1 array
                             % CREATE THE MISSING TIME VALUES
                             t_temp = (min(t_w):-winc:min(T_W))';
                             % APPEND THEM TO THE OLD t_w
@@ -101,7 +110,7 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
                             % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
                             graphEdeges_RSSI = graphEdeges_RSSI_temp;
                             
-                            if max(T_W) > (max(t_w) ) %%the current T_2to1_W array also finishes after t_2to1 array
+                            if max(T_W) > (max(t_w) + winc/2) %%the current T_2to1_W array also finishes after t_2to1 array
                                 % CREATE THE MISSING TIME VALUES
                                 t_temp = (max(t_w):winc:max(T_W))';
                                 % APPEND THEM TO THE OLD t_w
@@ -114,7 +123,7 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
                                 % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
                                 graphEdeges_RSSI = graphEdeges_RSSI_temp;
                             end
-                        elseif max(T_W) > (max(t_w) ) %%the current T_2to1_W array finishes after t_2to1 array
+                        elseif max(T_W) > (max(t_w) + winc/2 ) %%the current T_2to1_W array finishes after t_2to1 array
                             % CREATE THE MISSING TIME VALUES
                             t_temp = (max(t_w):winc:max(T_W))';
                             % APPEND THEM TO THE OLD t_w
