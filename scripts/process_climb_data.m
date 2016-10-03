@@ -27,6 +27,7 @@ ENABLE_HIGH_PRECISION_ON_MESH_RELAXATION = 1; % when this is set to 0 the 'secon
 
 PLOT_VERBOSITY = 3;
 ENABLE_LINK_RECONSTRUCTION = 0;
+DECIMATION_AFTER_FILT_FACTOR = 10;
 % RSSI to m conversion parameters
 k_TF_1= [-21.4013];%[-15.0339]; %[22]
 txPwr_10m_1 = -67.3449;%-61.8643;
@@ -53,6 +54,7 @@ link_reconstruction; % non importantissima per il papero
 
 apply_lp_filter;
 
+decimate_samples;
 calculate_link_reliability;
 
 recalculate_distance_matrix;
