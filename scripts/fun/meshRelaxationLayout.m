@@ -1,4 +1,5 @@
-function nodePositionXY = meshRelaxationLayout(edegesLength, links, unreliablility ,startingPos, high_precision)
+function [nodePositionXY, spring_En, nodes_En] = meshRelaxationLayout(edegesLength, links, unreliablility ,startingPos, high_precision)
+spring_En = NaN*ones(size(links,2),1);
 
 if high_precision ~= 0
     epsilon_D_energy = 0.00001; %this is used when the stop condition is on the slope of energy associated to one node
@@ -14,6 +15,7 @@ k_spring_default = 100;
 
 nodesList = unique( links );
 nodesAmount = size(nodesList,1);
+nodes_En = zeros(nodesAmount,2);
 
 distanceMatrix = zeros(nodesAmount);
 k_springs = k_spring_default*ones(nodesAmount);
@@ -120,5 +122,37 @@ if high_precision ~= 0
     [nodePositionXY,fval] = fminunc(springEnergyCost_an,nodePositionXY,options); %Providing gradient function decrease performance in some cases ....
 end
 nodePositionXY = [nodesList , nodePositionXY(:,1:2)];
+
+%calculate springs energy
+for linkNo=1:size(links,2)
+    pos1 = find(nodesList == links(1,linkNo));
+    pos2 = find(nodesList == links(2,linkNo));
+    
+    node_dist_after_loc = sqrt(sum((nodePositionXY(pos1,2:3)-nodePositionXY(pos2,2:3)).^2));
+    if node_dist_after_loc ~= Inf && ~isnan(node_dist_after_loc)
+        delta_l_spring = (distanceMatrix(pos1,pos2) - node_dist_after_loc).^2;
+        
+        spring_En(linkNo) = 1/2* k_springs(pos1,pos2) *delta_l_spring;
+    end
+end
+
+%calculate the energy associated with each node
+for nodeNo_1=1:nodesAmount
+    
+    nodes_En(nodeNo_1,1) = nodesList(nodeNo_1);
+    
+    for nodeNo_2=1:nodesAmount
+        if nodeNo_2 ~= nodeNo_1
+            linkNo = find((links(1,:) == nodesList(nodeNo_1) & links(2,:) == nodesList(nodeNo_2)) | (links(1,:) == nodesList(nodeNo_2) & links(2,:) == nodesList(nodeNo_1)));
+            if sum(size(linkNo))==2
+                if ~isnan(spring_En(linkNo)) && spring_En(linkNo) ~= Inf
+                    nodes_En(nodeNo_1,2) = nodes_En(nodeNo_1,2) + spring_En(linkNo);
+                end
+            else
+                warning('Link between %02f and %02f not found of doubled', nodesList(nodeNo_1), nodesList(nodeNo_2));
+            end
+        end
+    end
+end
 end
 
