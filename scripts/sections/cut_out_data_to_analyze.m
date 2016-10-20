@@ -1,6 +1,10 @@
 if TREAT_AS_STATIC == 0
     h = figure(200);
-    plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m);
+    if exist('T_TAG','var')
+        plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m);
+    else
+        plot(t_w*TICK_DURATION, graphEdeges_m);
+    end
     set(get(h,'Children'),'HitTest','off');
     xlabel('Time [s]');
     ylabel('distance [m]');
