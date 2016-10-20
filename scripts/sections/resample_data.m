@@ -171,8 +171,16 @@ for i_id_1 = 2:1:(size(RSSI_MATRIX,1)-1)
                 end
                 str = sprintf('%.2f percent done...\n',i/((size(RSSI_MATRIX,1)^2-2*(size(RSSI_MATRIX,1)-1)-size(RSSI_MATRIX,1))/2)*100);
                 fprintf(str);
-            end          
+            end
             i = i+1;
+        else %the signal is empty. Store a NaN signal
+            %TODO:CHECK!!!!!
+            graphEdeges_RSSI_temp = ones(size(t_w,1),size(graphEdeges_RSSI,2)+1) * (-Inf);
+            graphEdeges_RSSI_temp( 1:size(graphEdeges_RSSI,1) ,1:size(graphEdeges_RSSI,2) ) = graphEdeges_RSSI;
+            % REPLACE THE OLD graphEdeges_RSSI VERSION WITH THE NEW ONE
+            graphEdeges_RSSI = graphEdeges_RSSI_temp;
+            emptySignalsCount = emptySignalsCount + 1;
+            links = cat(2,links, [RSSI_MATRIX(1,i_id_1,1); RSSI_MATRIX(1,i_id_2,1)]);
         end
     end
 end
