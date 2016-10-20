@@ -57,8 +57,15 @@ for linkNo = 1 : size(links,2)
     
 end
 
-%while Dm_max_value > epsilon && iteractions < MAX_ITER
-while d > epsilon_d_movement && iteractions < MAX_ITER
+%DEPART UNCONNECTED NODES
+for nodeIdx = 1:size(distanceMatrix,1)
+    infs_line = Inf*ones(1,size(distanceMatrix,1));
+    infs_line(nodeIdx) = 0;
+    if sum(distanceMatrix(1,:) == infs_line) == size(distanceMatrix,1)
+        nodePositionXY(nodeIdx,:) = [10000;10000]; %set the 10000,10000 as node position
+    end
+end
+
 if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
     for nodeNo=1:nodesAmount
         figure(1234);
@@ -68,6 +75,8 @@ if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
     end
 end
 
+while Dm_max_value > epsilon_D_energy && iteractions < MAX_ITER
+    %while d > epsilon_d_movement && iteractions < MAX_ITER
     for nodeNo_m = 1:nodesAmount
         for nodeNo_i = 1:nodesAmount
             
@@ -78,10 +87,12 @@ end
                 dEdx(nodeNo_m,nodeNo_i) = k_springs(nodeNo_m, nodeNo_i)*(dmi_x - distanceMatrix(nodeNo_m, nodeNo_i)*dmi_x / sqrt(dmi_x^2+dmi_y^2));
                 dEdy(nodeNo_m,nodeNo_i) = k_springs(nodeNo_m, nodeNo_i)*(dmi_y - distanceMatrix(nodeNo_m, nodeNo_i)*dmi_y / sqrt(dmi_x^2+dmi_y^2));
                 
+                
             end
         end
-        
-        Dm(nodeNo_m) = sqrt( sum(dEdx(nodeNo_m,~isnan(dEdx(nodeNo_m,:))))^2 + sum(dEdy(nodeNo_m,~isnan(dEdy(nodeNo_m,:))))^2);
+        dEdy_valid = dEdy(nodeNo_m,~isnan(dEdy(nodeNo_m,:)) & abs(dEdy(nodeNo_m,:)) ~= Inf);
+        dEdx_valid = dEdx(nodeNo_m,~isnan(dEdx(nodeNo_m,:)) & abs(dEdx(nodeNo_m,:)) ~= Inf);
+        Dm(nodeNo_m) = sqrt( (sum(dEdx_valid))^2 + (sum(dEdy_valid))^2);
     end
     
     
@@ -112,15 +123,22 @@ end
         end
     end
     
-    if any(any(A))
-        X = linsolve(A,B);
-        dx = X(1);
-        dy = X(2);
-        d = sqrt(dx^2 + dy^2);
+    if( all(all(A)) && sum(sum(isnan(A)) == 0) && sum(sum(A > 10e+40  | A < -10e+40)) == 0 )
+        if rank(A) == size(A,2)
+            X = linsolve(A,B);
+            dx = X(1);
+            dy = X(2);
             if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
                 d = sqrt(dx^2 + dy^2);
                 fprintf('Moving node 0x%0x to %.4f meter, Dm_max_value = %.2f.\n',nodesList(Dm_max_index),d,Dm_max_value);
             end
+            nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [dx,dy];
+        else%move node otherwise it will block here, now move it one meter away on both axes
+            nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [1,1];
+        end
+    else     %move node otherwise it will block here, now move it one meter away on both axes
+        nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [1,1];
+    end
     
     if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
         for nodeNo=1:nodesAmount
@@ -131,7 +149,6 @@ end
                 grid on;
             end
         end
-        nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [dx,dy];
     end
     
     iteractions = iteractions + 1;
