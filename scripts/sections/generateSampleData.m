@@ -90,12 +90,12 @@ if CENTER_ON_ID == 0 || isempty(find(nodePositionXY_GroundTh(:,1,1) == CENTER_ON
 end
 
 %% CALCULATE LINKS  AND OTHERS VARIABLES NEEDED FOR THE LAYOUT
-links = [];
+links_GroundTh = [];
 graphEdeges_m_GroundTh = [];
 for nodeNo_1 = 1:size(nodePositionXY_GroundTh,1)-1
     for nodeNo_2 = nodeNo_1+1:size(nodePositionXY_GroundTh,1)
         graphEdeges_m_link = [];
-        links = cat(2,links,[nodePositionXY_GroundTh(nodeNo_1,1,1);nodePositionXY_GroundTh(nodeNo_2,1,1)]);
+        links_GroundTh = cat(2,links_GroundTh,[nodePositionXY_GroundTh(nodeNo_1,1,1);nodePositionXY_GroundTh(nodeNo_2,1,1)]);
         for timeIndexNo = 1 : size(nodePositionXY_GroundTh,3)
             d = sqrt( (nodePositionXY_GroundTh(nodeNo_2,2,timeIndexNo) - nodePositionXY_GroundTh(nodeNo_1,2,timeIndexNo))^2 + (nodePositionXY_GroundTh(nodeNo_2,3,timeIndexNo) - nodePositionXY_GroundTh(nodeNo_1,3,timeIndexNo))^2 );
             graphEdeges_m_link = cat(1,graphEdeges_m_link,d);
@@ -104,7 +104,8 @@ for nodeNo_1 = 1:size(nodePositionXY_GroundTh,1)-1
     end
 end
 graphEdeges_m = graphEdeges_m_GroundTh;
-LINKS_UNRELIABLITY = zeros(size(t_w,2),size(links,2));
+links = links_GroundTh;
+LINKS_UNRELIABLITY = zeros(size(t_w,2),size(links_GroundTh,2));
 AVAILABLE_IDs = nodePositionXY_GroundTh(:,1,1);
 
 if PLOT_VERBOSITY > 0
