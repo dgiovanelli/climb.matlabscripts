@@ -71,6 +71,14 @@ clustering_nodes;
 
 plot_nodes_layout;
 
+%% ERROR CALCULATION
+if exist('graphEdeges_m_GroundTh','var')
+    calculateError;
+    processError;
+end
+
+smooth_tracking_kalman;
+
 save last_run;
 
 
