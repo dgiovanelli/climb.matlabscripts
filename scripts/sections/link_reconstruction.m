@@ -11,7 +11,7 @@ if ENABLE_LINK_RECONSTRUCTION
         fprintf('LINKS RECONSTRUCTION:\n');
         graphEdeges_m_rec(graphEdeges_m == Inf) = 0;
         for edgeNo = 1:size(graphEdeges_m_rec,2)
-            graphEdeges_m_rec(:,edgeNo) = fillgaps(graphEdeges_m_rec(:,edgeNo));
+            graphEdeges_m_rec(:,edgeNo) = fillgaps(graphEdeges_m_rec(:,edgeNo)); %%this should avoid too long gaps (> 5 sec)
             %PLOT PROGRESS PERCENT DATA
             if edgeNo > nextPercentPlotIndex
                 nextPercentPlotIndex = nextPercentPlotIndex + size(graphEdeges_m_rec,2)/100;

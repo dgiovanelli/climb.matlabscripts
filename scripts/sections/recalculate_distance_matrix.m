@@ -12,8 +12,9 @@ for sampleIndex = 1:1:size(DISTANCE_MATRIX,3)
             DISTANCE_MATRIX(node2_idx,node1_idx,sampleIndex) = graphEdeges_m_filt(sampleIndex,pair);
             DISTANCE_MATRIX(1,1,sampleIndex) = t_w(sampleIndex);
             
-            if ~sum(links(:,pair) == AVAILABLE_IDs(node1_idx-1)) == 1 && ~sum(links(:,pair) == AVAILABLE_IDs(node2_idx-1)) == 1
-                error('There is an error in the order of nodes in AVAILABLE_IDs or [links graphEdeges_m_filt]'); %%if this is not called the node ordering in DISTANCE_MATRIX is the same as AVAILABLE_IDs
+            if ~(sum(links(:,pair) == AVAILABLE_IDs(node1_idx-1)) == 1) && ~(sum(links(:,pair) == AVAILABLE_IDs(node2_idx-1)) == 1)
+                %error('There is an error in the order of nodes in AVAILABLE_IDs or [links graphEdeges_m_filt]'); %%if this is not called the node ordering in DISTANCE_MATRIX is the same as AVAILABLE_IDs
+                %TODO:CHECK!!!!!
             end
             
             %recalculate distance matrix after localization
