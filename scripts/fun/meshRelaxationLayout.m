@@ -1,4 +1,5 @@
 function [nodePositionXY, spring_En, nodes_En] = meshRelaxationLayout(edegesLength, links, unreliablility ,startingPos, high_precision)
+ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION = 0;
 spring_En = NaN*ones(size(links,2),1);
 
 if high_precision ~= 0
@@ -34,8 +35,12 @@ else
     nodePositionXY = startingPos;
 end
 
+
+if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
+    d = Inf;
+    colorlist = hsv( MAX_ITER*nodesAmount );
+end
 Dm_max_value = Inf;
-d = Inf;
 %GENERATE DISTANCE MATRIX
 for linkNo = 1 : size(links,2)
     pos1 = find(nodesList == links(1,linkNo));
@@ -54,6 +59,15 @@ end
 
 %while Dm_max_value > epsilon && iteractions < MAX_ITER
 while d > epsilon_d_movement && iteractions < MAX_ITER
+if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
+    for nodeNo=1:nodesAmount
+        figure(1234);
+        hold on;
+        plot(nodePositionXY(nodeNo,1),nodePositionXY(nodeNo,2),'o','Color',colorlist((nodeNo-1)*MAX_ITER+iteractions+1,:));
+        grid on;
+    end
+end
+
     for nodeNo_m = 1:nodesAmount
         for nodeNo_i = 1:nodesAmount
             
@@ -103,10 +117,24 @@ while d > epsilon_d_movement && iteractions < MAX_ITER
         dx = X(1);
         dy = X(2);
         d = sqrt(dx^2 + dy^2);
+            if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
+                d = sqrt(dx^2 + dy^2);
+                fprintf('Moving node 0x%0x to %.4f meter, Dm_max_value = %.2f.\n',nodesList(Dm_max_index),d,Dm_max_value);
+            end
     
+    if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
+        for nodeNo=1:nodesAmount
+            if nodeNo == Dm_max_index
+                figure(1234);
+                hold on;
+                plot(nodePositionXY(nodeNo,1),nodePositionXY(nodeNo,2),'o','Color',colorlist((nodeNo-1)*MAX_ITER+iteractions+1,:));
+                grid on;
+            end
+        end
         nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [dx,dy];
     end
-    iteractions = iteractions + 1; 
+    
+    iteractions = iteractions + 1;
 end
 %iteractions
 if iteractions >= MAX_ITER
