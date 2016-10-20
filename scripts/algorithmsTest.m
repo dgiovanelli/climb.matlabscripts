@@ -47,4 +47,6 @@ plot_nodes_layout;
 
 
 %% ERROR CALCULATION
-calculateError
+calculateError;
+
+processError;
