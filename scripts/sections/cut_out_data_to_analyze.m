@@ -16,6 +16,8 @@ if TREAT_AS_STATIC == 0
     fprintf('Click on the analysis bounds!\n');
     [x1,~] = ginput(1);
     [x2,~] = ginput(1);
+%     x1 = 20;
+%     x2 = 40;
     if x1 > x2
         xstop = x1/TICK_DURATION;
         xstart = x2/TICK_DURATION;
@@ -35,4 +37,3 @@ else
     start_selected_cut_index = 1;
     stop_selected_cut_index = 1;
 end
-
