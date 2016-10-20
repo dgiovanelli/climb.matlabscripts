@@ -2,16 +2,16 @@ function [nodePositionXY, spring_En, nodes_En] = meshRelaxationLayout(edegesLeng
 spring_En = NaN*ones(size(links,2),1);
 
 if high_precision ~= 0
-    epsilon_D_energy = 0.00001; %this is used when the stop condition is on the slope of energy associated to one node
+    epsilon_D_energy = 0.01; %this is used when the stop condition is on the slope of energy associated to one node
     epsilon_d_movement = 0.01;  %this is used when the stop condition is on the minimum movement of the node
-    MAX_ITER = 5000;
+    MAX_ITER = 10000;
 else
-    epsilon_D_energy = 0.001; %this is used when the stop condition is on the slope of energy associated to one node
+    epsilon_D_energy = 1; %this is used when the stop condition is on the slope of energy associated to one node
     epsilon_d_movement = 0.1;  %this is used when the stop condition is on the minimum movement of the node
     MAX_ITER = 1000;
 end
 iteractions = 0;
-k_spring_default = 100;
+k_spring_default = 20;
 
 nodesList = unique( links );
 nodesAmount = size(nodesList,1);
@@ -24,15 +24,16 @@ dEdy = zeros(nodesAmount);
 Dm = zeros(nodesAmount,1);
 if isempty(startingPos)
     nodePositionXY = rand(nodesAmount,2)*2-1;
-    r = 600;%100*max(edegesLength(edegesLength ~= Inf)); %avoid Infs
+    r = 100*max(edegesLength(edegesLength ~= Inf)); %avoid Infs
     deltaPhi_rad = (2*pi)/nodesAmount;
     for nodeNo = 1:nodesAmount
         nodePositionXY(nodeNo,:) = [r*sin(deltaPhi_rad*nodeNo), r*cos(deltaPhi_rad*nodeNo)];
     end
-    MAX_ITER = 100000;
+    MAX_ITER = MAX_ITER*2; %if the starting position is not given increase the MAX_ITER by a factor of two
 else
     nodePositionXY = startingPos;
 end
+
 Dm_max_value = Inf;
 d = Inf;
 %GENERATE DISTANCE MATRIX
@@ -43,11 +44,12 @@ for linkNo = 1 : size(links,2)
     distanceMatrix(pos1, pos2) = edegesLength(linkNo);
     distanceMatrix(pos2, pos1) = edegesLength(linkNo);
     
-%     k_springs(pos1, pos2) = k_springs(pos1, pos2)/(edegesLength(linkNo).^2);
-%     k_springs(pos2, pos1) = k_springs(pos1, pos2)/(edegesLength(linkNo).^2);
+    %k_springs(pos1, pos2) = k_springs(pos1, pos2)/(edegesLength(linkNo).^2);
+    %k_springs(pos2, pos1) = k_springs(pos1, pos2)/(edegesLength(linkNo).^2);
     
-    k_springs(pos1, pos2) = k_springs(pos1, pos2)/(unreliablility(linkNo).^4);
-    k_springs(pos2, pos1) = k_springs(pos2, pos1)/(unreliablility(linkNo).^4);
+    k_springs(pos1, pos2) = k_springs(pos1, pos2)/unreliablility(linkNo);%sqrt(unreliablility(linkNo));
+    k_springs(pos2, pos1) = k_springs(pos2, pos1)/unreliablility(linkNo);%sqrt(unreliablility(linkNo));
+    
 end
 
 %while Dm_max_value > epsilon && iteractions < MAX_ITER
