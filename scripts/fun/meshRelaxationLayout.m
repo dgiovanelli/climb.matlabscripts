@@ -196,7 +196,7 @@ for nodeNo_1=1:nodesAmount
                     nodes_En(nodeNo_1,2) = nodes_En(nodeNo_1,2) + spring_En(linkNo);
                 end
             else
-                warning('Link between %02f and %02f not found of doubled', nodesList(nodeNo_1), nodesList(nodeNo_2));
+                warning('Link between %02f and %02f not found or doubled', nodesList(nodeNo_1), nodesList(nodeNo_2));
             end
         end
     end

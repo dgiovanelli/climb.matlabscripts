@@ -1,6 +1,6 @@
 %% GENERATE SAMPLE DATA FOR FIXED NODES
 button = 1;
-fixedNodeNo = 0; 
+fixedNodeNo = 0;
 
 %fixedNodesPositionXY(1,:) = [firstNodeId, 0, 0];
 figure(1)
