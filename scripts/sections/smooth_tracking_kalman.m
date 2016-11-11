@@ -7,15 +7,15 @@ param.motionNoise           = [0.1, 0.1];
 param.measurementNoise      = 1;
 
 
-nodePositionXY_kalman_smooth = zeros(size(nodePositionXY));
-nodePositionXY_kalman_smooth(:,1,:) = nodePositionXY(:,1,:);
-nodesAmount = size(nodePositionXY,1);
-amountOfTimeSamples = size(nodePositionXY,3);
+nodePositionXY_kalman_smooth = zeros(size(NODE_POSITION_ID_XY));
+nodePositionXY_kalman_smooth(:,1,:) = NODE_POSITION_ID_XY(:,1,:);
+nodesAmount = size(NODE_POSITION_ID_XY,1);
+amountOfTimeSamples = size(NODE_POSITION_ID_XY,3);
 
 
 for nodeNo = 1 : nodesAmount
     
-    node_detected_positions = permute(nodePositionXY(nodeNo,2:3,:),[2,3,1]);
+    node_detected_positions = permute(NODE_POSITION_ID_XY(nodeNo,2:3,:),[2,3,1]);
     
     %node_tracked_positions = zeros(size(node_detected_positions));
     isTrackInitialized = false;
@@ -71,33 +71,33 @@ if PLOT_VERBOSITY > 0
     % h = figure(205);
     % set(get(h,'Children'),'HitTest','off');
     nodeMap_gif_filename = '../output/nodesMap_animation_kalman.gif';
-    fps = 1/(winc_sec*DECIMATION_AFTER_FILT_FACTOR)*GIF_SPEEDUP;
-    max_number_of_Clusters = max(max(IDX_pre_localization(:,2,:))) + 1;
-    colorlist2 = hsv( size(nodePositionXY,1) );
+    fps = 1/(W_INCR_S*DECIMATION_AFTER_FILT_FACTOR)*GIF_SPEEDUP;
+    max_number_of_Clusters = max(max(IDX_PRE_LOC(:,2,:))) + 1;
+    colorlist2 = hsv( size(NODE_POSITION_ID_XY,1) );
     colorlist3 = hsv( max_number_of_Clusters + 1 );
     squareDim = SQUARE_SIZE_M/2;
     nextPercentPlotIndex = 0;
     percent_str = [];
-    max_spring_en = max(max(spring_En));
-    max_nodes_en = max(max(nodes_En(2,:,:)));
+    max_spring_en = max(max(SPRING_RESIDUAL_ENERGY));
+    max_nodes_en = max(max(NODES_RESIDUAL_ENERGY(2,:,:)));
     max_link_unrel = max(max(LINKS_UNRELIABLITY));
-    avg_spring_en = mean2(spring_En);
-    avg_nodes_en = mean2(nodes_En(2,:,:));
+    avg_spring_en = mean2(SPRING_RESIDUAL_ENERGY);
+    avg_nodes_en = mean2(NODES_RESIDUAL_ENERGY(2,:,:));
     avg_link_unrel = mean2(LINKS_UNRELIABLITY);
     fprintf('PLOTTING AND SAVING NODE MAP:\n');
     if TREAT_AS_STATIC == 0
-        amountOfTimeSamples = size(nodePositionXY,3);
+        amountOfTimeSamples = size(NODE_POSITION_ID_XY,3);
     else
         amountOfTimeSamples = 1;
     end
     for timeIndexNo = 1 : amountOfTimeSamples
         
         
-        nodePositionXY_temp = nodePositionXY(nodePositionXY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
+        nodePositionXY_temp = NODE_POSITION_ID_XY(NODE_POSITION_ID_XY(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
         
         nodePositionXY_kalman_smooth_temp = nodePositionXY_kalman_smooth(nodePositionXY_kalman_smooth(:,1,timeIndexNo) ~= 0,:, timeIndexNo);
-        spring_En_temp = spring_En(timeIndexNo, :);
-        nodes_En_temp = nodes_En(:,:,timeIndexNo);
+        spring_En_temp = SPRING_RESIDUAL_ENERGY(timeIndexNo, :);
+        nodes_En_temp = NODES_RESIDUAL_ENERGY(:,:,timeIndexNo);
         link_unreliability_temp = LINKS_UNRELIABLITY(timeIndexNo,:);
         nodesOutsideSquare = 0;
         
@@ -122,7 +122,7 @@ if PLOT_VERBOSITY > 0
         hold off
         
         if TREAT_AS_STATIC == 0
-            str = sprintf('Time = %.0f\n %d nodes inside the sqare\n %d nodes outside the square',(start_selected_cut_index+timeIndexNo*DECIMATION_AFTER_FILT_FACTOR)*winc_sec,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
+            str = sprintf('Time = %.0f\n %d nodes inside the sqare\n %d nodes outside the square',(ANALYSIS_START_INDEX+timeIndexNo*DECIMATION_AFTER_FILT_FACTOR)*W_INCR_S,nodeNo-nodesOutsideSquare,nodesOutsideSquare);
         else
             str = sprintf('%d nodes inside the sqare\n %d nodes outside the square',nodeNo-nodesOutsideSquare,nodesOutsideSquare);
         end

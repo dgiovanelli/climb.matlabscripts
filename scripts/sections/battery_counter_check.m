@@ -4,10 +4,11 @@ if SHOW_BATTERY_VOLTAGE == 1
     fprintf('GETTING BATTERY VOLTAGE DATA.\n');
     %% BATTERY CHECK
     colorlist=hsv(size(AVAILABLE_IDs,1));
-    legendStrs = cell(size(AVAILABLE_IDs,1),1);
-    nodesBatteryData = cell(size(AVAILABLE_IDs,1),1);
+    legendStrs = cell(size(AVAILABLE_IDs(AVAILABLE_IDs ~= 256 & AVAILABLE_IDs ~= 254),1),1);
+    nodesBatteryData = cell(size(AVAILABLE_IDs(AVAILABLE_IDs ~= 256 & AVAILABLE_IDs ~= 254),1),1);
+    i_nodes_data = 1;
     for i_id = 2:1:size(AVAILABLE_IDs,1)+1
-        %if RSSI_MATRIX(i_id,1,end) ~= -Inf
+        if RSSI_MATRIX(i_id,1,end) ~= 256 && RSSI_MATRIX(i_id,1,end) ~= 254
             BATT_Volt_milliV_temp = ones(size(RSSI_MATRIX,3),1)*(-Inf);
             T_batt_volt_temp = ones(size(RSSI_MATRIX,3),1)*(-Inf);
             storedSamples = 0;
@@ -20,21 +21,24 @@ if SHOW_BATTERY_VOLTAGE == 1
                 end
             end
             %cut unused part of battery data vectors and store them in the cell array
-            nodesBatteryData{i_id-1}.ID = AVAILABLE_IDs(i_id-1);
-            nodesBatteryData{i_id-1}.BATT_Volt_milliV = BATT_Volt_milliV_temp(1:storedSamples);
-            nodesBatteryData{i_id-1}.T_batt_volt = T_batt_volt_temp(1:storedSamples)*TICK_DURATION;
+            nodesBatteryData{i_nodes_data}.ID = AVAILABLE_IDs(i_id-1);
+            nodesBatteryData{i_nodes_data}.BATT_Volt_milliV = BATT_Volt_milliV_temp(1:storedSamples);
+            nodesBatteryData{i_nodes_data}.T_batt_volt = T_batt_volt_temp(1:storedSamples);
             
-            if ~isempty(nodesBatteryData{i_id-1}.T_batt_volt)
-                legendStrs{i_id} = sprintf('ID: %02x',nodesBatteryData{i_id-1}.ID);              
+            if ~isempty(nodesBatteryData{i_nodes_data}.T_batt_volt)
+                legendStrs{i_nodes_data} = sprintf('ID: 0x%02x',nodesBatteryData{i_nodes_data}.ID);              
                 figure(25)
-                plot(nodesBatteryData{i_id-1}.T_batt_volt, nodesBatteryData{i_id-1}.BATT_Volt_milliV ,'o', 'col',colorlist(i_id-1,:) );
-                axis([0 RSSI_MATRIX(1,1,end)*TICK_DURATION, 0, 3300]);
+                plot(unixToMatlabTime(nodesBatteryData{i_nodes_data}.T_batt_volt), nodesBatteryData{i_nodes_data}.BATT_Volt_milliV ,'.', 'col',colorlist(i_id-1,:) );
+                datetick('x',DATE_FORMAT);
+                axis([unixToMatlabTime(RSSI_MATRIX(1,1,1)), unixToMatlabTime(RSSI_MATRIX(1,1,end)), 0, 3300]);
                 xlabel('Time [s]');
                 ylabel('battery voltage [mV]');
                 grid on;
                 hold on;
             end
-        %end
+            
+            i_nodes_data = i_nodes_data + 1;
+        end
     end
     figure(25)
     legend(legendStrs(2:end));
@@ -97,7 +101,7 @@ else    %% PACKET CHECK
     fprintf('PACKET CHECK STATISTICS (ONLY FOR ADV DATA!!):\n');
     fprintf('Node ID | received packets | missing packets | PEr\n');
     for nodeNo = 1 : size(packetStat,1)
-        fprintf('%02X      | %d               | %d              | %.2f %%\n',packetStat(nodeNo,1), packetStat(nodeNo,2), packetStat(nodeNo,3) ,  packetStat(nodeNo,3) / (packetStat(nodeNo,2) + packetStat(nodeNo,3))*100 );
+        fprintf('0x%02X      | %d               | %d              | %.2f %%\n',packetStat(nodeNo,1), packetStat(nodeNo,2), packetStat(nodeNo,3) ,  packetStat(nodeNo,3) / (packetStat(nodeNo,2) + packetStat(nodeNo,3))*100 );
     end
     fprintf('\n');
 end

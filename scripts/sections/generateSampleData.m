@@ -2,11 +2,17 @@
 button = 1;
 fixedNodeNo = 0;
 
-%fixedNodesPositionXY(1,:) = [firstNodeId, 0, 0];
-figure(1)
+figure(1);
 %plot(fixedNodesPositionXY(1,2), fixedNodesPositionXY(1,3),'o')
 plot(1000,1000);
-axis([-1, SQUARE_SIZE_M-1, -1, SQUARE_SIZE_M-1]);
+axis([-6, 20, -13, 13]);
+L = get(gca,'XLim');
+H = get(gca,'YLim');
+set(gca,'XTick',L(1):1:L(2))
+set(gca,'YTick',H(1):1:H(2))
+%xticks(-2:1:20);
+%yticks(-2:1:20);
+%axis([-SQUARE_SIZE_M/2, SQUARE_SIZE_M/2, -SQUARE_SIZE_M/2, SQUARE_SIZE_M/2]);
 grid on;
 
 fprintf('Insert new nodes by clicking on image (right click to stop)\n');
@@ -19,8 +25,16 @@ while button == 1
         else
             fixedNodesPositionXY = [fixedNodesPositionXY(1:fixedNodeNo,:);[firstNodeId+fixedNodeNo , x , y]];
         end
+        h = figure(1);
         plot(fixedNodesPositionXY(1:fixedNodeNo+1,2), fixedNodesPositionXY(1:fixedNodeNo+1,3),'o');
-        axis([-1, SQUARE_SIZE_M-1, -1, SQUARE_SIZE_M-1]);
+        axis([-6, 20, -13, 13]);
+        L = get(gca,'XLim');
+        H = get(gca,'YLim');
+        set(gca,'XTick',L(1):1:L(2))
+        set(gca,'YTick',H(1):1:H(2))
+        %         axis([-SQUARE_SIZE_M/2, SQUARE_SIZE_M/2, -SQUARE_SIZE_M/2, SQUARE_SIZE_M/2]);
+        set(get(h,'Children'),'HitTest','off');
+        
         grid on;
         fixedNodeNo = fixedNodeNo+1;
     end
@@ -43,13 +57,13 @@ while button == 1
             stop_XY = [x,y];
             
             len_XY = stop_XY - start_XY;
-            speed_XY = len_XY./duration_s;
+            speed_XY = len_XY./(duration_s - Ts);
             
             if movingNodeNo == 0
-                movingNodePositionXY = zeros(1,3,size(t_w,2));
+                movingNodePositionXY = zeros(1,3,size(T_TICKS,2));
             end
             
-            for timeNo = 1:size(t_w,2)
+            for timeNo = 1:size(T_TICKS,2)
                 movingNodePositionXY(movingNodeNo+1,:,timeNo) = [firstNodeId+fixedNodeNo+movingNodeNo, start_XY+speed_XY.*(timeNo-1).*Ts];
             end
             movingNodeNo = movingNodeNo + 1;
@@ -61,8 +75,8 @@ if movingNodeNo == 0 && fixedNodeNo == 0
 end
 
 fprintf('Moving nodes inserted!\n\n');
-nodePositionXY_GroundTh = zeros(fixedNodeNo+movingNodeNo,3,size(t_w,2));
-for timeNo = 1:size(t_w,2)
+nodePositionXY_GroundTh = zeros(fixedNodeNo+movingNodeNo,3,size(T_TICKS,2));
+for timeNo = 1:size(T_TICKS,2)
     if movingNodeNo ~= 0 && fixedNodeNo ~= 0
         nodePositionXY_GroundTh(:,:,timeNo) = [fixedNodesPositionXY ; movingNodePositionXY(:,:,timeNo)];
     elseif fixedNodeNo ~= 0
@@ -91,7 +105,7 @@ end
 
 %% CALCULATE LINKS  AND OTHERS VARIABLES NEEDED FOR THE LAYOUT
 links_GroundTh = [];
-graphEdeges_m_GroundTh = [];
+GRAPH_EDGES_M_GT = [];
 for nodeNo_1 = 1:size(nodePositionXY_GroundTh,1)-1
     for nodeNo_2 = nodeNo_1+1:size(nodePositionXY_GroundTh,1)
         graphEdeges_m_link = [];
@@ -100,12 +114,12 @@ for nodeNo_1 = 1:size(nodePositionXY_GroundTh,1)-1
             d = sqrt( (nodePositionXY_GroundTh(nodeNo_2,2,timeIndexNo) - nodePositionXY_GroundTh(nodeNo_1,2,timeIndexNo))^2 + (nodePositionXY_GroundTh(nodeNo_2,3,timeIndexNo) - nodePositionXY_GroundTh(nodeNo_1,3,timeIndexNo))^2 );
             graphEdeges_m_link = cat(1,graphEdeges_m_link,d);
         end
-        graphEdeges_m_GroundTh =  cat(2,graphEdeges_m_GroundTh,graphEdeges_m_link);
+        GRAPH_EDGES_M_GT =  cat(2,GRAPH_EDGES_M_GT,graphEdeges_m_link);
     end
 end
-graphEdeges_m = graphEdeges_m_GroundTh;
-links = links_GroundTh;
-LINKS_UNRELIABLITY = zeros(size(t_w,2),size(links_GroundTh,2));
+GRAPH_EDGES_M = GRAPH_EDGES_M_GT;
+LINKS = links_GroundTh;
+LINKS_UNRELIABLITY = zeros(size(T_TICKS,2),size(links_GroundTh,2));
 AVAILABLE_IDs = nodePositionXY_GroundTh(:,1,1);
 
 if PLOT_VERBOSITY > 0
@@ -152,5 +166,4 @@ if PLOT_VERBOSITY > 0
     
     
     T_TAG = [];
-    TICK_DURATION = 1;
 end

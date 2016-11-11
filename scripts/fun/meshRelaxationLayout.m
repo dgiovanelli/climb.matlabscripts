@@ -1,6 +1,6 @@
-function [nodePositionXY, spring_En, nodes_En] = meshRelaxationLayout(edegesLength, links, unreliablility ,startingPos, high_precision)
+function [NODE_POSITION_ID_XY, SPRING_RESIDUAL_ENERGY, NODES_RESIDUAL_ENERGY] = meshRelaxationLayout(edegesLength, LINKS, unreliablility ,startingPos, high_precision)
 ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION = 0;
-spring_En = NaN*ones(size(links,2),1);
+SPRING_RESIDUAL_ENERGY = NaN*ones(size(LINKS,2),1);
 
 if high_precision ~= 0
     epsilon_D_energy = 0.01; %this is used when the stop condition is on the slope of energy associated to one node
@@ -14,9 +14,9 @@ end
 iteractions = 0;
 k_spring_default = 20;
 
-nodesList = unique( links );
+nodesList = unique( LINKS );
 nodesAmount = size(nodesList,1);
-nodes_En = zeros(nodesAmount,2);
+NODES_RESIDUAL_ENERGY = zeros(nodesAmount,2);
 
 distanceMatrix = zeros(nodesAmount);
 k_springs = k_spring_default*ones(nodesAmount);
@@ -24,15 +24,15 @@ dEdx = zeros(nodesAmount);
 dEdy = zeros(nodesAmount);
 Dm = zeros(nodesAmount,1);
 if isempty(startingPos)
-    nodePositionXY = rand(nodesAmount,2)*2-1;
+    NODE_POSITION_ID_XY = rand(nodesAmount,2)*2-1;
     r = 100*max(edegesLength(edegesLength ~= Inf)); %avoid Infs
     deltaPhi_rad = (2*pi)/nodesAmount;
     for nodeNo = 1:nodesAmount
-        nodePositionXY(nodeNo,:) = [r*sin(deltaPhi_rad*nodeNo), r*cos(deltaPhi_rad*nodeNo)];
+        NODE_POSITION_ID_XY(nodeNo,:) = [r*sin(deltaPhi_rad*nodeNo), r*cos(deltaPhi_rad*nodeNo)];
     end
     MAX_ITER = MAX_ITER*2; %if the starting position is not given increase the MAX_ITER by a factor of two
 else
-    nodePositionXY = startingPos;
+    NODE_POSITION_ID_XY = startingPos;
 end
 
 
@@ -42,9 +42,9 @@ if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
 end
 Dm_max_value = Inf;
 %GENERATE DISTANCE MATRIX
-for linkNo = 1 : size(links,2)
-    pos1 = find(nodesList == links(1,linkNo));
-    pos2 = find(nodesList == links(2,linkNo));
+for linkNo = 1 : size(LINKS,2)
+    pos1 = find(nodesList == LINKS(1,linkNo));
+    pos2 = find(nodesList == LINKS(2,linkNo));
     
     distanceMatrix(pos1, pos2) = edegesLength(linkNo);
     distanceMatrix(pos2, pos1) = edegesLength(linkNo);
@@ -62,7 +62,7 @@ for nodeIdx = 1:size(distanceMatrix,1)
     infs_line = Inf*ones(1,size(distanceMatrix,1));
     infs_line(nodeIdx) = 0;
     if sum(distanceMatrix(1,:) == infs_line) == size(distanceMatrix,1)
-        nodePositionXY(nodeIdx,:) = [10000;10000]; %set the 10000,10000 as node position
+        NODE_POSITION_ID_XY(nodeIdx,:) = [10000;10000]; %set the 10000,10000 as node position
     end
 end
 
@@ -70,7 +70,7 @@ if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
     for nodeNo=1:nodesAmount
         figure(1234);
         hold on;
-        plot(nodePositionXY(nodeNo,1),nodePositionXY(nodeNo,2),'o','Color',colorlist((nodeNo-1)*MAX_ITER+iteractions+1,:));
+        plot(NODE_POSITION_ID_XY(nodeNo,1),NODE_POSITION_ID_XY(nodeNo,2),'o','Color',colorlist((nodeNo-1)*MAX_ITER+iteractions+1,:));
         grid on;
     end
 end
@@ -81,8 +81,8 @@ while Dm_max_value > epsilon_D_energy && iteractions < MAX_ITER
         for nodeNo_i = 1:nodesAmount
             
             if nodeNo_i ~= nodeNo_m
-                dmi_x = nodePositionXY(nodeNo_m,1) - nodePositionXY(nodeNo_i,1);
-                dmi_y = nodePositionXY(nodeNo_m,2) - nodePositionXY(nodeNo_i,2);
+                dmi_x = NODE_POSITION_ID_XY(nodeNo_m,1) - NODE_POSITION_ID_XY(nodeNo_i,1);
+                dmi_y = NODE_POSITION_ID_XY(nodeNo_m,2) - NODE_POSITION_ID_XY(nodeNo_i,2);
                 
                 dEdx(nodeNo_m,nodeNo_i) = k_springs(nodeNo_m, nodeNo_i)*(dmi_x - distanceMatrix(nodeNo_m, nodeNo_i)*dmi_x / sqrt(dmi_x^2+dmi_y^2));
                 dEdy(nodeNo_m,nodeNo_i) = k_springs(nodeNo_m, nodeNo_i)*(dmi_y - distanceMatrix(nodeNo_m, nodeNo_i)*dmi_y / sqrt(dmi_x^2+dmi_y^2));
@@ -103,8 +103,8 @@ while Dm_max_value > epsilon_D_energy && iteractions < MAX_ITER
     for nodeNo_i = 1:nodesAmount
         if nodeNo_i ~= Dm_max_index
             if distanceMatrix(Dm_max_index, nodeNo_i) ~= Inf && ~isnan(distanceMatrix(Dm_max_index, nodeNo_i))
-                dmi_x = nodePositionXY(Dm_max_index,1) - nodePositionXY(nodeNo_i,1);
-                dmi_y = nodePositionXY(Dm_max_index,2) - nodePositionXY(nodeNo_i,2);
+                dmi_x = NODE_POSITION_ID_XY(Dm_max_index,1) - NODE_POSITION_ID_XY(nodeNo_i,1);
+                dmi_y = NODE_POSITION_ID_XY(Dm_max_index,2) - NODE_POSITION_ID_XY(nodeNo_i,2);
                 dmi_x_square = dmi_x.^2;
                 dmi_y_square = dmi_y.^2;
                 l_mi = distanceMatrix(Dm_max_index, nodeNo_i);
@@ -132,12 +132,12 @@ while Dm_max_value > epsilon_D_energy && iteractions < MAX_ITER
                 d = sqrt(dx^2 + dy^2);
                 fprintf('Moving node 0x%0x to %.4f meter, Dm_max_value = %.2f.\n',nodesList(Dm_max_index),d,Dm_max_value);
             end
-            nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [dx,dy];
+            NODE_POSITION_ID_XY(Dm_max_index,:) = NODE_POSITION_ID_XY(Dm_max_index,:) + [dx,dy];
         else%move node otherwise it will block here, now move it one meter away on both axes
-            nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [1,1];
+            NODE_POSITION_ID_XY(Dm_max_index,:) = NODE_POSITION_ID_XY(Dm_max_index,:) + [1,1];
         end
     else     %move node otherwise it will block here, now move it one meter away on both axes
-        nodePositionXY(Dm_max_index,:) = nodePositionXY(Dm_max_index,:) + [1,1];
+        NODE_POSITION_ID_XY(Dm_max_index,:) = NODE_POSITION_ID_XY(Dm_max_index,:) + [1,1];
     end
     
     if ENABLE_HIGH_VERBOSITY_OF_MESH_RELAXATION
@@ -145,7 +145,7 @@ while Dm_max_value > epsilon_D_energy && iteractions < MAX_ITER
             if nodeNo == Dm_max_index
                 figure(1234);
                 hold on;
-                plot(nodePositionXY(nodeNo,1),nodePositionXY(nodeNo,2),'o','Color',colorlist((nodeNo-1)*MAX_ITER+iteractions+1,:));
+                plot(NODE_POSITION_ID_XY(nodeNo,1),NODE_POSITION_ID_XY(nodeNo,2),'o','Color',colorlist((nodeNo-1)*MAX_ITER+iteractions+1,:));
                 grid on;
             end
         end
@@ -163,37 +163,37 @@ if high_precision ~= 0
     
     %USE THE FOLLOWING TWO LINES IF THE GRADIENT IS NOT PROVIDED INSIDE springEnergyCost
     %options = optimset('Display','notify');
-    %[nodePositionXY,~] = fminunc(springEnergyCost_an,nodePositionXY,options);
+    %[NODE_POSITION_ID_XY,~] = fminunc(springEnergyCost_an,NODE_POSITION_ID_XY,options);
     %INSTEAD USE THE FOLLOWING TWO LINES IF THE GRADIENT IS PROVIDED INSIDE springEnergyCost
     options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true,'Display','notify');
-    [nodePositionXY,fval] = fminunc(springEnergyCost_an,nodePositionXY,options); %Providing gradient function decrease performance in some cases ....
+    [NODE_POSITION_ID_XY,fval] = fminunc(springEnergyCost_an,NODE_POSITION_ID_XY,options); %Providing gradient function decrease performance in some cases ....
 end
-nodePositionXY = [nodesList , nodePositionXY(:,1:2)];
+NODE_POSITION_ID_XY = [nodesList , NODE_POSITION_ID_XY(:,1:2)];
 
 %calculate springs energy
-for linkNo=1:size(links,2)
-    pos1 = find(nodesList == links(1,linkNo));
-    pos2 = find(nodesList == links(2,linkNo));
+for linkNo=1:size(LINKS,2)
+    pos1 = find(nodesList == LINKS(1,linkNo));
+    pos2 = find(nodesList == LINKS(2,linkNo));
     
-    node_dist_after_loc = sqrt(sum((nodePositionXY(pos1,2:3)-nodePositionXY(pos2,2:3)).^2));
+    node_dist_after_loc = sqrt(sum((NODE_POSITION_ID_XY(pos1,2:3)-NODE_POSITION_ID_XY(pos2,2:3)).^2));
     if node_dist_after_loc ~= Inf && ~isnan(node_dist_after_loc)
         delta_l_spring = (distanceMatrix(pos1,pos2) - node_dist_after_loc).^2;
         
-        spring_En(linkNo) = 1/2* k_springs(pos1,pos2) *delta_l_spring;
+        SPRING_RESIDUAL_ENERGY(linkNo) = 1/2* k_springs(pos1,pos2) *delta_l_spring;
     end
 end
 
 %calculate the energy associated with each node
 for nodeNo_1=1:nodesAmount
     
-    nodes_En(nodeNo_1,1) = nodesList(nodeNo_1);
+    NODES_RESIDUAL_ENERGY(nodeNo_1,1) = nodesList(nodeNo_1);
     
     for nodeNo_2=1:nodesAmount
         if nodeNo_2 ~= nodeNo_1
-            linkNo = find((links(1,:) == nodesList(nodeNo_1) & links(2,:) == nodesList(nodeNo_2)) | (links(1,:) == nodesList(nodeNo_2) & links(2,:) == nodesList(nodeNo_1)));
+            linkNo = find((LINKS(1,:) == nodesList(nodeNo_1) & LINKS(2,:) == nodesList(nodeNo_2)) | (LINKS(1,:) == nodesList(nodeNo_2) & LINKS(2,:) == nodesList(nodeNo_1)));
             if sum(size(linkNo))==2
-                if ~isnan(spring_En(linkNo)) && spring_En(linkNo) ~= Inf
-                    nodes_En(nodeNo_1,2) = nodes_En(nodeNo_1,2) + spring_En(linkNo);
+                if ~isnan(SPRING_RESIDUAL_ENERGY(linkNo)) && SPRING_RESIDUAL_ENERGY(linkNo) ~= Inf
+                    NODES_RESIDUAL_ENERGY(nodeNo_1,2) = NODES_RESIDUAL_ENERGY(nodeNo_1,2) + SPRING_RESIDUAL_ENERGY(linkNo);
                 end
             else
                 warning('Link between %02f and %02f not found or doubled', nodesList(nodeNo_1), nodesList(nodeNo_2));

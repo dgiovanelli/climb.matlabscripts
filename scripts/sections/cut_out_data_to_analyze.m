@@ -1,39 +1,46 @@
 if TREAT_AS_STATIC == 0
     h = figure(200);
     if exist('T_TAG','var')
-        plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m);
+        plot(unixToMatlabTime(T_TAG),zeros(size(T_TAG)),'ro', unixToMatlabTime(T_TICKS), GRAPH_EDGES_M);
     else
-        plot(t_w*TICK_DURATION, graphEdeges_m);
+        plot(unixToMatlabTime(T_TICKS), GRAPH_EDGES_M);
     end
     set(get(h,'Children'),'HitTest','off');
     xlabel('Time [s]');
     ylabel('distance [m]');
     legend('TAGs','distance');
-    title('All links');
+    datetick('x',DATE_FORMAT);
+    title('All LINKS');
     grid on;
     hold off;
     
-    fprintf('Click on the analysis bounds!\n');
-    [x1,~] = ginput(1);
-    [x2,~] = ginput(1);
-%     x1 = 20;
-%     x2 = 40;
-    if x1 > x2
-        xstop = x1/TICK_DURATION;
-        xstart = x2/TICK_DURATION;
+    if 0
+        fprintf('Click on the analysis bounds!\n');
+        [x1,~] = ginput(1);
+        [x2,~] = ginput(1);
+        if x1 > x2
+            xstop = matlabToUnixTime(x1);
+            xstart = matlabToUnixTime(x2);
+        else
+            xstop = matlabToUnixTime(x2);
+            xstart = matlabToUnixTime(x1);
+        end
     else
-        xstop = x2/TICK_DURATION;
-        xstart = x1/TICK_DURATION;
+        x1 = T_TAG(5);
+        x2 = T_TAG(end);
+        
+        xstart = x1;
+        xstop = x2;
     end
     
-    tmp = abs(t_w - xstart);
-    [ ~ , start_selected_cut_index] = min(tmp);
-    tmp = abs(t_w - xstop);
-    [ ~ , stop_selected_cut_index] = min(tmp);
+    tmp = abs(T_TICKS - xstart);
+    [ ~ , ANALYSIS_START_INDEX] = min(tmp);
+    tmp = abs(T_TICKS - xstop);
+    [ ~ , ANALYSIS_STOP_INDEX] = min(tmp);
     
-    graphEdeges_m = graphEdeges_m(start_selected_cut_index:stop_selected_cut_index,:);
-    t_w = t_w(start_selected_cut_index:stop_selected_cut_index);
+    GRAPH_EDGES_M = GRAPH_EDGES_M(ANALYSIS_START_INDEX:ANALYSIS_STOP_INDEX,:);
+    T_TICKS = T_TICKS(ANALYSIS_START_INDEX:ANALYSIS_STOP_INDEX);
 else
-    start_selected_cut_index = 1;
-    stop_selected_cut_index = 1;
+    ANALYSIS_START_INDEX = 1;
+    ANALYSIS_STOP_INDEX = 1;
 end

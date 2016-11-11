@@ -1,4 +1,4 @@
-function createXMLdescriptionFile( SIGNAL, links, ID_LIST , filename)
+function createXMLdescriptionFile( SIGNAL, LINKS, ID_LIST , filename)
     
 fileID = fopen(filename,'w');
 clk = clock;
@@ -19,9 +19,9 @@ fprintf(fileID,'</nodes>\n');
 
 %EDGES LIST
 fprintf(fileID,'<edges count="%d">\n',size(SIGNAL,2));
-for index = 1:1:size(links,2)
+for index = 1:1:size(LINKS,2)
     if strcmp(sprintf('%.2f',SIGNAL(index)), 'NaN') == 0
-        fprintf(fileID,'<edge id="%d.0" source="%d.0" target="%d.0" weight="%.5f"/>\n',index,links(1,index),links(2,index),SIGNAL(index));
+        fprintf(fileID,'<edge id="%d.0" source="%d.0" target="%d.0" weight="%.5f"/>\n',index,LINKS(1,index),LINKS(2,index),SIGNAL(index));
     end
 end
 fprintf(fileID,'</edges>\n');

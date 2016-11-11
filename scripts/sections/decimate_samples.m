@@ -1,13 +1,15 @@
 %DECIMATION AFTER LP_FILTERING
-graphEdeges_m_filt_dec = graphEdeges_m_filt(1:DECIMATION_AFTER_FILT_FACTOR:end,:);
-t_w_dec = t_w(1:DECIMATION_AFTER_FILT_FACTOR:end);
+graph_edeges_m_filt_dec = GRAPH_EDGES_M_FILT(1:DECIMATION_AFTER_FILT_FACTOR:end,:);
+t_w_dec = T_TICKS(1:DECIMATION_AFTER_FILT_FACTOR:end);
 
 if PLOT_VERBOSITY > 1
     figure
-    plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w*TICK_DURATION, graphEdeges_m_filt);
+    plot(unixToMatlabTime(T_TAG),zeros(size(T_TAG)),'ro', unixToMatlabTime(T_TICKS), GRAPH_EDGES_M_FILT);
+    datetick('x',DATE_FORMAT);
     figure
-    plot(T_TAG*TICK_DURATION,zeros(size(T_TAG)),'ro', t_w_dec*TICK_DURATION, graphEdeges_m_filt_dec);
+    plot(unixToMatlabTime(T_TAG),zeros(size(T_TAG)),'ro', unixToMatlabTime(t_w_dec), graph_edeges_m_filt_dec);
+    datetick('x',DATE_FORMAT);
 end
 
-graphEdeges_m_filt = graphEdeges_m_filt_dec;
-t_w = t_w_dec;
+GRAPH_EDGES_M_FILT = graph_edeges_m_filt_dec;
+T_TICKS = t_w_dec;
